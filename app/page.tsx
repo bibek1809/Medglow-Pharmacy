@@ -11,6 +11,8 @@ type Product = {
   created_at?: string
 }
 
+const INQUIRY_STATUSES = ['Inquiry received', 'Contacted', 'Ordered', 'Call back', 'Closed'] as const
+
 export default function Page() {
   const [showAdmin, setShowAdmin] = useState(false)
   const [adminEmail, setAdminEmail] = useState('')
@@ -33,6 +35,7 @@ export default function Page() {
     product_interest: 'General Inquiry',
   })
   const [expandedInquiryId, setExpandedInquiryId] = useState<string | null>(null)
+  const [draggingInquiryId, setDraggingInquiryId] = useState<string | null>(null)
   const [submitStatus, setSubmitStatus] = useState('')
   const [submitError, setSubmitError] = useState('')
   const [showInquiryModal, setShowInquiryModal] = useState(false)
@@ -253,6 +256,46 @@ export default function Page() {
       setSubmitError(err.message || 'Error updating inquiry')
     }
   }
+
+  const handleInquiryDragStart = (id: string) => {
+    setDraggingInquiryId(id)
+  }
+
+  const normalizeInquiryStatus = (status: string | undefined) => {
+    const normalized = (status || '').toLowerCase()
+    if (normalized === 'pending' || normalized === '') return 'Inquiry received'
+    if (normalized === 'contacted') return 'Contacted'
+    if (normalized === 'converted' || normalized === 'ordered' || normalized === 'complete' || normalized === 'completed') return 'Ordered'
+    if (normalized === 'callback' || normalized === 'call back' || normalized.includes('call')) return 'Call back'
+    if (normalized === 'closed') return 'Closed'
+    return status || 'Inquiry received'
+  }
+
+  const handleInquiryDrop = async (id: string, status: string) => {
+    if (!draggingInquiryId) return
+    await updateInquiryStatus(draggingInquiryId, status)
+    setDraggingInquiryId(null)
+  }
+
+  const inquiryAnalytics = INQUIRY_STATUSES.reduce((acc, status) => {
+    acc[status] = inquiries.filter((item) => normalizeInquiryStatus(item.status).trim() === status).length
+    return acc
+  }, {} as Record<string, number>)
+
+  const topInquiryTypes = Object.entries(
+    inquiries.reduce((acc, item) => {
+      const type = item.product_interest || 'General Inquiry'
+      acc[type] = (acc[type] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+  )
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+
+  const totalInquiries = inquiries.length
+  const contactRate = totalInquiries ? Math.round((inquiryAnalytics['Contacted'] / totalInquiries) * 100) : 0
+  const orderRate = totalInquiries ? Math.round((inquiryAnalytics['Ordered'] / totalInquiries) * 100) : 0
+  const callbackCount = inquiryAnalytics['Call back'] || 0
 
   // Delete Inquiry
   const deleteInquiry = async (id: string) => {
@@ -504,6 +547,54 @@ export default function Page() {
           {/* Inquiries Tab */}
           {adminTab === 'inquiries' && (
             <div className="space-y-6">
+              <div className="grid gap-6 xl:grid-cols-[1.2fr_1fr]">
+                <div className="bg-slate-800 rounded-3xl p-6 border border-slate-700">
+                  <h2 className="text-2xl font-bold mb-4">Inquiry analytics</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    {INQUIRY_STATUSES.map((status) => (
+                      <div key={status} className="rounded-3xl border border-slate-700 bg-slate-900 p-4">
+                        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{status}</p>
+                        <p className="mt-3 text-3xl font-semibold text-amber-400">{inquiryAnalytics[status] || 0}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="rounded-3xl border border-slate-700 bg-slate-900 p-4 text-sm text-slate-300 space-y-3">
+                    <p>Total inquiries: <strong className="text-white">{totalInquiries}</strong></p>
+                    <p>Contact rate: <strong className="text-white">{contactRate}%</strong></p>
+                    <p>Order rate: <strong className="text-white">{orderRate}%</strong></p>
+                    <p>Follow-up queue: <strong className="text-white">{callbackCount}</strong> customers need callback.</p>
+                  </div>
+                  <div className="mt-6 rounded-3xl border border-slate-700 bg-slate-900 p-4 text-sm text-slate-300">
+                    <p className="font-semibold text-slate-100">Top inquiry types</p>
+                    <ul className="mt-3 space-y-2">
+                      {topInquiryTypes.map(([type, value]) => (
+                        <li key={type} className="flex items-center justify-between gap-2 text-slate-300">
+                          <span>{type}</span>
+                          <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-amber-400">{value}</span>
+                        </li>
+                      ))}
+                      {topInquiryTypes.length === 0 && <li className="text-slate-500">No inquiries yet.</li>}
+                    </ul>
+                  </div>
+                </div>
+                <div className="bg-slate-800 rounded-3xl p-6 border border-slate-700">
+                  <h2 className="text-2xl font-bold mb-4">Status board</h2>
+                  <div className="grid gap-4">
+                    {INQUIRY_STATUSES.map((status) => (
+                      <div
+                        key={status}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={() => handleInquiryDrop(draggingInquiryId || '', status)}
+                        className="rounded-3xl border border-slate-700 bg-slate-900 p-4 min-h-[120px]"
+                      >
+                        <p className="text-sm uppercase tracking-[0.2em] text-slate-400">{status}</p>
+                        <p className="mt-2 text-2xl font-semibold text-amber-400">{inquiryAnalytics[status] || 0}</p>
+                        <p className="mt-3 text-sm text-slate-500">Drop inquiries here to update their stage.</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
               <div className="bg-slate-800 rounded-lg overflow-hidden">
                 <table className="w-full">
                   <thead className="bg-slate-700">
@@ -523,7 +614,12 @@ export default function Page() {
                       const shortMessage = inquiry.message?.length > 100 ? inquiry.message.slice(0, 100) + '...' : inquiry.message
                       return (
                         <>
-                          <tr key={inquiry.id} className="border-t border-slate-700 hover:bg-slate-700/50">
+                          <tr
+                            key={inquiry.id}
+                            draggable
+                            onDragStart={() => handleInquiryDragStart(inquiry.id)}
+                            className="border-t border-slate-700 hover:bg-slate-700/50 cursor-grab"
+                          >
                             <td className="px-6 py-3 align-top">{inquiry.name}</td>
                             <td className="px-6 py-3 align-top text-blue-400">
                               <a href={`mailto:${inquiry.email}`}>{inquiry.email}</a>
@@ -545,14 +641,15 @@ export default function Page() {
                             </td>
                             <td className="px-6 py-3 align-top">
                               <select
-                                value={inquiry.status}
+                                value={normalizeInquiryStatus(inquiry.status)}
                                 onChange={(e) => updateInquiryStatus(inquiry.id, e.target.value)}
                                 className="bg-slate-700 border border-slate-600 rounded px-3 py-1 text-sm"
                               >
-                                <option>pending</option>
-                                <option>contacted</option>
-                                <option>converted</option>
-                                <option>closed</option>
+                                {INQUIRY_STATUSES.map((statusOption) => (
+                                  <option key={statusOption} value={statusOption}>
+                                    {statusOption}
+                                  </option>
+                                ))}
                               </select>
                             </td>
                             <td className="px-6 py-3 text-slate-400 text-sm">
@@ -771,6 +868,7 @@ export default function Page() {
             name: 'MedGlow Pharmacy',
             url: 'https://medglowpharmacy.com',
             logo: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-06-17%20at%207.39.47%20AM-lYqHqlYkytZWfbVVX41lI2CVnioVpJ.jpeg',
+            hasMap: 'https://maps.app.goo.gl/PgU5XyrT5geDbR3p9',
             telephone: '+977-9846774539',
             email: 'pharmacymedglow@gmail.com',
             address: {
@@ -918,6 +1016,16 @@ export default function Page() {
               <div className="space-y-3 text-sm border-t border-slate-700/60 pt-4 text-slate-300 font-light">
                 <p>
                   <strong className="text-white font-medium">📍 Address:</strong> Suryabinayak-4, Dadhikot, Harsha Chowk
+                </p>
+                <p>
+                  <a
+                    href="https://maps.app.goo.gl/PgU5XyrT5geDbR3p9"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-amber-300 hover:text-white transition"
+                  >
+                    View on Google Maps
+                  </a>
                 </p>
                 <p>
                   <strong className="text-white font-medium">📞 Contact:</strong> +977 9846774539
@@ -1313,6 +1421,16 @@ export default function Page() {
           <div className="text-center md:text-left space-y-2">
             <p className="text-white font-medium text-sm">MedGlow Pharmacy</p>
             <p className="font-light text-slate-500">Suryabinayak-4, Dadhikot, Harsha Chowk, Nepal</p>
+            <p className="font-light text-slate-500">
+              <a
+                href="https://maps.app.goo.gl/PgU5XyrT5geDbR3p9"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-amber-400 transition"
+              >
+                Open in Google Maps
+              </a>
+            </p>
             <p className="font-light text-slate-500">Registered Pharmacy Core Space.</p>
           </div>
 
