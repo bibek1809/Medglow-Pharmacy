@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 
 const ADMIN_EMAILS = [
   process.env.SUPABASE_ADMIN_EMAIL ?? 'pharmacymedglow@gmail.com',
@@ -24,13 +24,14 @@ async function requireAdmin(supabase: Awaited<ReturnType<typeof createClient>>) 
 }
 
 export async function GET() {
-  const supabase = await createClient()
-  const { error } = await requireAdmin(supabase)
+  const sessionClient = await createClient()
+  const { error } = await requireAdmin(sessionClient)
   if (error) {
     return Response.json({ error: error.message }, { status: 403 })
   }
 
-  const { data, error: queryError } = await supabase
+  const adminClient = createAdminClient()
+  const { data, error: queryError } = await adminClient
     .from('inquiries')
     .select('*')
     .order('created_at', { ascending: false })
@@ -43,8 +44,8 @@ export async function GET() {
 }
 
 export async function PATCH(req: Request) {
-  const supabase = await createClient()
-  const { error } = await requireAdmin(supabase)
+  const sessionClient = await createClient()
+  const { error } = await requireAdmin(sessionClient)
   if (error) {
     return Response.json({ error: error.message }, { status: 403 })
   }
@@ -56,7 +57,8 @@ export async function PATCH(req: Request) {
     return Response.json({ error: 'Missing inquiry id or status' }, { status: 400 })
   }
 
-  const { error: updateError } = await supabase
+  const adminClient = createAdminClient()
+  const { error: updateError } = await adminClient
     .from('inquiries')
     .update({ status, updated_at: new Date() })
     .eq('id', id)
@@ -69,8 +71,8 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const supabase = await createClient()
-  const { error } = await requireAdmin(supabase)
+  const sessionClient = await createClient()
+  const { error } = await requireAdmin(sessionClient)
   if (error) {
     return Response.json({ error: error.message }, { status: 403 })
   }
@@ -82,7 +84,8 @@ export async function DELETE(req: Request) {
     return Response.json({ error: 'Missing inquiry id' }, { status: 400 })
   }
 
-  const { error: deleteError } = await supabase.from('inquiries').delete().eq('id', id)
+  const adminClient = createAdminClient()
+  const { error: deleteError } = await adminClient.from('inquiries').delete().eq('id', id)
 
   if (deleteError) {
     return Response.json({ error: deleteError.message }, { status: 500 })
