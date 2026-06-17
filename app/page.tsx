@@ -12,17 +12,17 @@ export default function Page() {
   }, [])
 
   const brands = [
-    'COSRX',
-    'Purest',
-    'Mamaearth',
-    'Plum',
-    'The Derma Co',
-    'Dot & Key',
-    'Minimalist',
-    'The Ordinary',
-    'Bioderma',
-    'CeraVe',
-    'Cetaphil',
+    { name: 'COSRX', logo: '/logos/cosrx.png' },
+    { name: 'Purest', logo: '/logos/purest.png' },
+    { name: 'Mamaearth', logo: '/logos/mamaearth.png' },
+    { name: 'Plum', logo: '/logos/plum.png' },
+    { name: 'The Derma Co', logo: '/logos/the-derma-co.png' },
+    { name: 'Dot & Key', logo: '/logos/dot-key.png' },
+    { name: 'Minimalist', logo: '/logos/minimalist.png' },
+    { name: 'The Ordinary', logo: '/logos/the-ordinary.png' },
+    { name: 'Bioderma', logo: '/logos/bioderma.png' },
+    { name: 'CeraVe', logo: '/logos/cerave.png' },
+    { name: 'Cetaphil', logo: '/logos/cetaphil.png' },
   ]
 
   const services = [
@@ -205,12 +205,15 @@ export default function Page() {
               {brands.map((brand, i) => (
                 <div
                   key={i}
-                  className="bg-slate-800/50 border border-slate-700/50 p-6 rounded-xl flex flex-col items-center justify-center text-center group hover:border-amber-400/40 transition"
+                  className="bg-slate-800/50 border border-slate-700/50 p-4 rounded-xl flex flex-col items-center justify-center text-center group hover:border-amber-400/40 transition h-32"
                 >
-                  <div className="h-12 w-full bg-slate-700/30 rounded flex items-center justify-center mb-2 overflow-hidden text-slate-300 font-bold text-sm">
-                    {brand}
-                  </div>
-                  <span className="text-xs font-medium text-slate-300">{brand}</span>
+                  <img 
+                    src={brand.logo} 
+                    alt={`${brand.name} logo`}
+                    className="h-16 w-auto object-contain mb-2 group-hover:scale-105 transition-transform"
+                    loading="lazy"
+                  />
+                  <span className="text-xs font-medium text-slate-300 leading-tight">{brand.name}</span>
                 </div>
               ))}
 
