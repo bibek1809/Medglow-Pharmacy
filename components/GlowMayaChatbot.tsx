@@ -9,43 +9,42 @@ type Message = {
   isBot: boolean
 }
 
-const WEBSITE_CONTENT = {
+const MEDGLOW_KNOWLEDGE = {
   location: 'Suryabinayak-4, Dadhikot, Harsha Chowk, Bagmati Province, Nepal (44800)',
-  deliveryAvailability: 'We deliver across Nepal via partner services. Orders for non-prescription skincare and baby care items can be placed through WhatsApp, Instagram, or TikTok. Delivery typically takes 1-3 business days depending on location.',
-  openingTime: 'We are open Monday through Sunday from 8:00 AM to 8:00 PM. Walk-ins are welcome during these hours.',
+  openingHours: '8:00 AM - 8:00 PM (Monday through Sunday)',
   contact: '+977 9763259854',
-  services: [
-    {
-      name: 'Skincare Consultation',
-      description: 'Personalized skincare recommendations for hydration, glow, and sensitive skin. We help you choose effective, trusted products.'
-    },
-    {
-      name: 'On-site Blood Testing',
-      description: 'Fast and hygienic sample collection with clear guidance on results and follow-up care. Designed for routine wellness checks.'
-    },
-    {
-      name: 'Baby Care Essentials',
-      description: 'Curated baby-safe products for skin, hygiene, and nutrition. Reliable choices for new parents and growing families.'
-    }
-  ],
-  skincareRoutine: {
-    facewash: 'A gentle cleanser that removes dirt, oil, and impurities without stripping your skin\'s natural barrier. Use twice daily - morning and night before applying other products.',
-    moisturizer: 'Hydrates and protects your skin. Choose water-based for oily skin or cream-based for dry skin. Apply after cleansing while skin is still damp.',
-    toner: 'Balances skin pH and prepares skin for better absorption of subsequent products. Use after cleansing and before moisturizer.',
-    serum: 'Concentrated treatment with active ingredients targeting specific concerns like hydration, brightening, or anti-aging. Apply after toner, before moisturizer.',
-    eyeCream: 'Lightweight formula for the delicate eye area. Helps with dark circles, puffiness, and fine lines. Gently pat around the orbital bone.',
-    sunblock: 'Essential SPF 30+ or higher to protect against UV damage. Apply daily as the last step in your morning routine, reapply every 2 hours outdoors.'
+  delivery: '1-3 business days via partner services across Nepal',
+  parking: 'Street parking available near Harsha Chowk. Look for our pharmacy sign near the main intersection.',
+
+  skincareBasics: {
+    whyRoutine: 'A skincare routine is essential because your skin naturally produces oil, sweat, and sheds dead cells daily. Without proper cleansing and protection, pores become clogged, moisture barrier weakens, and signs of aging accelerate. Water alone cannot remove impurities that daily skincare products can.',
+    skinBarrier: 'A damaged skin barrier shows as redness, flaking, tightness, or stinging. The stratum corneum (outermost skin layer) acts as your skin\'s shield. Medglow products with ceramides and hyaluronic acid help repair this barrier by restoring lipids and hydration.',
+    tewl: 'TEWL (Transepidermal Water Loss) is moisture escaping through damaged skin. Prevent it with moisturizers containing occlusives like shea butter or petrolatum, and humectants like hyaluronic acid.',
+    cellularTurnover: 'Skin cells renew every 28-40 days. Expect to see brightening results in 6-8 weeks with consistent use, while deeper concerns like melasma may take 3-6 months.',
+    sunscreenImportance: 'UV rays trigger melanin production, causing dark spots. Daily SPF prevents this cycle and protects active ingredients from degrading.',
   },
-  skincareTips: [
-    'Cleanse your face twice daily with a gentle facewash',
-    'Apply moisturizer to keep skin hydrated and protected',
-    'Use toner to balance skin pH and prep for treatments',
-    'Serums deliver concentrated benefits for specific concerns',
-    'Eye cream for the delicate under-eye area',
-    'Never skip sunblock - daily SPF is crucial for skin health',
-    'Introduce new products gradually, one at a time',
-    'Be consistent with your routine for best results'
-  ]
+
+  ingredients: {
+    glycolicAcid: 'Glycolic acid is an AHA exfoliant that dissolves dead skin bonds. Start with 5% concentration, use 2-3 times weekly to avoid irritation.',
+    kojicAcid: 'Kojic acid inhibits tyrosinase (melanin-producing enzyme). It\'s effective for hyperpigmentation but may cause purging in first 2-4 weeks.',
+    niacinamide: 'Niacinamide regulates oil, strengthens barrier, and reduces inflammation. It pairs well with Vitamin C - use Vitamin C in AM, niacinamide in PM.',
+    tyrosinaseInhibitor: 'Tyrosinase converts tyrosine to melanin. Inhibiting it reduces dark spots. Found in kojic acid, vitamin C, and arbutin.',
+  },
+
+  routines: {
+    oilySkin: 'For oily skin: 1) Gel cleanser (salicylic acid) 2) Alcohol-free toner 3) Niacinamide serum 4) Lightweight gel moisturizer 5) Oil-free SPF. Avoid heavy creams that can clog pores.',
+    sensitiveSkin: 'For sensitive skin: 1) Gentle cream cleanser 2) Hydrating toner (no alcohol) 3) Centella asiatica or ceramide serum 4) Fragrance-free moisturizer 5) Mineral SPF (zinc oxide). Introduce actives slowly.',
+    melasma: 'Melasma routine: 1) Gentle cleanser 2) Hydrating toner 3) Vitamin C or kojic acid serum 4) Brightening moisturizer 5) SPF 50+ daily. Consistency is key - results take 3-6 months.',
+    am: 'Morning routine: 1) Cleanser 2) Toner 3) Serum 4) Moisturizer 5) Sunscreen (essential)',
+    pm: 'Evening routine: 1) Cleanser 2) Toner 3) Treatment serum 4) Eye cream 5) Rich moisturizer for overnight repair',
+  },
+
+  safety: {
+    pregnancy: 'Most Medglow products are safe during pregnancy, but avoid retinoids and high-concentration acids. Consult your doctor for precaution.',
+    irritation: 'Mild tingling is normal with exfoliants. Burning/stinging means stop use - rinse gently and apply soothing moisturizer.',
+    purging: 'Purging occurs when accelerated cell turnover brings deep clogs to surface. Lasts 2-6 weeks. If severe, reduce frequency.',
+    prescription: 'Our advanced creams are over-the-counter. Prescription items require consultation with our pharmacist on-site.',
+  }
 }
 
 export default function GlowMayaChatbot() {
@@ -53,7 +52,7 @@ export default function GlowMayaChatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hello! I'm GlowMaya, your skincare assistant from MedGlow Pharmacy. How can I help you today? You can ask me about our location, delivery, opening hours, or skincare routine basics!",
+      text: "Hello! I'm GlowMaya, your skincare assistant from MedGlow Pharmacy. How can I help you today?",
       isBot: true
     }
   ])
@@ -71,52 +70,112 @@ export default function GlowMayaChatbot() {
   const getResponse = (query: string): string => {
     const lowerQuery = query.toLowerCase().trim()
 
-    if (lowerQuery.includes('location') || lowerQuery.includes('address') || lowerQuery.includes('where') || lowerQuery.includes('dadhikot')) {
-      return `We're located at ${WEBSITE_CONTENT.location}. Visit us during our opening hours for in-person assistance!`
+    if (lowerQuery.includes('location') || lowerQuery.includes('address') || lowerQuery.includes('where') || lowerQuery.includes('dadhikot') || lowerQuery.includes('harsha chowk')) {
+      return `We're located at ${MEDGLOW_KNOWLEDGE.location}. We're open daily from ${MEDGLOW_KNOWLEDGE.openingHours}. Street parking is available near Harsha Chowk.`
     }
 
-    if (lowerQuery.includes('delivery') || lowerQuery.includes('deliver') || lowerQuery.includes('shipping') || lowerQuery.includes('ship')) {
-      return WEBSITE_CONTENT.deliveryAvailability
+    if (lowerQuery.includes('delivery') || lowerQuery.includes('deliver') || lowerQuery.includes('shipping') || lowerQuery.includes('ship') || lowerQuery.includes('order online')) {
+      return `Yes, you can order via WhatsApp (+977 9763259854), Instagram, or TikTok. We deliver across Nepal within ${MEDGLOW_KNOWLEDGE.delivery}.`
     }
 
-    if (lowerQuery.includes('open') || lowerQuery.includes('hour') || lowerQuery.includes('time') || lowerQuery.includes('close')) {
-      return WEBSITE_CONTENT.openingTime
+    if (lowerQuery.includes('open') || lowerQuery.includes('hour') || lowerQuery.includes('time') || lowerQuery.includes('close') || lowerQuery.includes('opening')) {
+      return `We're open daily from ${MEDGLOW_KNOWLEDGE.openingHours}. Walk-ins are welcome at our Dadhikot location.`
     }
 
-    if (lowerQuery.includes('contact') || lowerQuery.includes('phone') || lowerQuery.includes('call')) {
-      return `You can reach us at ${WEBSITE_CONTENT.contact} via WhatsApp, or message us on Instagram @medglow.pharmacy.skincare and TikTok @medglowpharmacy.skincare.`
+    if (lowerQuery.includes('parking') || lowerQuery.includes('landmark')) {
+      return MEDGLOW_KNOWLEDGE.parking
     }
 
-    if (lowerQuery.includes('service') || lowerQuery.includes('what do you offer')) {
-      return `We offer:\n• ${WEBSITE_CONTENT.services[0].name}: ${WEBSITE_CONTENT.services[0].description}\n• ${WEBSITE_CONTENT.services[1].name}: ${WEBSITE_CONTENT.services[1].description}\n• ${WEBSITE_CONTENT.services[2].name}: ${WEBSITE_CONTENT.services[2].description}`
+    if (lowerQuery.includes('prescription') || lowerQuery.includes('over the counter') || lowerQuery.includes('otc')) {
+      return MEDGLOW_KNOWLEDGE.safety.prescription
     }
 
-    if (lowerQuery.includes('facewash') || lowerQuery.includes('face wash') || lowerQuery.includes('cleanser')) {
-      return `Facewash: ${WEBSITE_CONTENT.skincareRoutine.facewash}`
+    if (lowerQuery.includes('contact') || lowerQuery.includes('phone') || lowerQuery.includes('call') || lowerQuery.includes('whatsapp')) {
+      return `Reach us at ${MEDGLOW_KNOWLEDGE.contact} via WhatsApp, or @medglow.pharmacy.skincare on Instagram and TikTok.`
     }
 
-    if (lowerQuery.includes('moisturizer') || lowerQuery.includes('moisturise') || lowerQuery.includes('cream')) {
-      return `Moisturizer: ${WEBSITE_CONTENT.skincareRoutine.moisturizer}`
+    if (lowerQuery.includes('routine') || lowerQuery.includes('daily skincare') || lowerQuery.includes('skincare steps') || lowerQuery.includes('how to use') || lowerQuery.includes('what is my skin care routine') || lowerQuery.includes('what should be daily routine')) {
+      return `Daily skincare routine:\n${MEDGLOW_KNOWLEDGE.routines.am}\n\nEvening:\n${MEDGLOW_KNOWLEDGE.routines.pm}`
     }
 
-    if (lowerQuery.includes('toner')) {
-      return `Toner: ${WEBSITE_CONTENT.skincareRoutine.toner}`
+    if (lowerQuery.includes('oily face') || lowerQuery.includes('oily skin') || lowerQuery.includes('acne prone') || lowerQuery.includes('oily')) {
+      return MEDGLOW_KNOWLEDGE.routines.oilySkin
+    }
+
+    if (lowerQuery.includes('why skincare') || lowerQuery.includes('why do i need') || lowerQuery.includes('water enough')) {
+      return MEDGLOW_KNOWLEDGE.skincareBasics.whyRoutine
+    }
+
+    if (lowerQuery.includes('skin barrier') || lowerQuery.includes('damaged skin') || lowerQuery.includes('stratum corneum')) {
+      return MEDGLOW_KNOWLEDGE.skincareBasics.skinBarrier
+    }
+
+    if (lowerQuery.includes('tewl') || lowerQuery.includes('transepidermal water loss')) {
+      return MEDGLOW_KNOWLEDGE.skincareBasics.tewl
+    }
+
+    if (lowerQuery.includes('cellular turnover') || lowerQuery.includes('how long') || lowerQuery.includes('see results')) {
+      return MEDGLOW_KNOWLEDGE.skincareBasics.cellularTurnover
+    }
+
+    if (lowerQuery.includes('sunscreen') || lowerQuery.includes('spf') || lowerQuery.includes('sun block') || lowerQuery.includes('why sunscreen') || lowerQuery.includes('dark spot cream')) {
+      return MEDGLOW_KNOWLEDGE.skincareBasics.sunscreenImportance
+    }
+
+    if (lowerQuery.includes('glycolic acid')) {
+      return MEDGLOW_KNOWLEDGE.ingredients.glycolicAcid
+    }
+
+    if (lowerQuery.includes('kojic acid') || lowerQuery.includes('koijc')) {
+      return MEDGLOW_KNOWLEDGE.ingredients.kojicAcid
+    }
+
+    if (lowerQuery.includes('niacinamide') || lowerQuery.includes('vitamin c') || lowerQuery.includes('vitamin')) {
+      if (lowerQuery.includes('niacinamide')) return MEDGLOW_KNOWLEDGE.ingredients.niacinamide
+      return 'Niacinamide pairs excellently with Vitamin C - use Vitamin C in your morning routine for antioxidant protection, and niacinamide in the evening for barrier repair.'
+    }
+
+    if (lowerQuery.includes('hyperpigmentation') || lowerQuery.includes('dark spot') || lowerQuery.includes('acne scar') || lowerQuery.includes('pigmentation')) {
+      if (lowerQuery.includes('melasma')) {
+        return MEDGLOW_KNOWLEDGE.routines.melasma
+      }
+      return 'For dark spots and hyperpigmentation: Use vitamin C or kojic acid serums, combined with niacinamide. Always pair with SPF 50+ to prevent further darkening. Results typically appear in 6-8 weeks.'
+    }
+
+    if (lowerQuery.includes('facewash') || lowerQuery.includes('face wash') || lowerQuery.includes('cleanser') || lowerQuery.includes('cleanse')) {
+      return 'Use a gentle cleanser twice daily. For oily skin: gel or foam with salicylic acid. For dry/sensitive: cream-based. Gently massage for 30-60 seconds, rinse lukewarm.'
+    }
+
+    if (lowerQuery.includes('moisturizer') || lowerQuery.includes('moisturise') || lowerQuery.includes('hydrate')) {
+      return 'Moisturizer hydrates and protects. Apply while skin is damp to lock in moisture. Choose gel for oily skin, cream for dry skin.'
+    }
+
+    if (lowerQuery.includes('toner') || lowerQuery.includes('tone')) {
+      return 'Toner balances skin pH and preps for absorption. Use after cleansing: apply with palms or cotton. Choose hydrating or astringent based on your skin type.'
     }
 
     if (lowerQuery.includes('serum')) {
-      return `Serum: ${WEBSITE_CONTENT.skincareRoutine.serum}`
+      return 'Serums deliver concentrated actives. Apply after toner, before moisturizer. 2-3 drops are enough - gently pat, don\'t rub.'
     }
 
     if (lowerQuery.includes('eye cream') || lowerQuery.includes('dark circle') || lowerQuery.includes('puffy eyes')) {
-      return `Eye Cream: ${WEBSITE_CONTENT.skincareRoutine.eyeCream}`
+      return 'Eye cream targets delicate under-eye area. Gently pat around orbital bone - don\'t rub. Use morning and night for hydration and brightening.'
     }
 
     if (lowerQuery.includes('sunblock') || lowerQuery.includes('sunscreen') || lowerQuery.includes('spf') || lowerQuery.includes('sun block')) {
-      return `Sunblock: ${WEBSITE_CONTENT.skincareRoutine.sunblock}`
+      return 'SPF 30+ is essential daily - even indoors. Apply as the final step in your morning routine. Reapply every 2 hours outdoors.'
     }
 
-    if (lowerQuery.includes('routine') || lowerQuery.includes('daily skincare') || lowerQuery.includes('skincare steps') || lowerQuery.includes('how to use')) {
-      return `A basic daily skincare routine includes:\n${WEBSITE_CONTENT.skincareTips.map((tip, i) => `${i + 1}. ${tip}`).join('\n')}`
+    if (lowerQuery.includes('pregnant') || lowerQuery.includes('pregnancy') || lowerQuery.includes('breastfeeding')) {
+      return MEDGLOW_KNOWLEDGE.safety.pregnancy
+    }
+
+    if (lowerQuery.includes('burning') || lowerQuery.includes('stinging') || lowerQuery.includes('irritation') || lowerQuery.includes('reaction')) {
+      return MEDGLOW_KNOWLEDGE.safety.irritation
+    }
+
+    if (lowerQuery.includes('purging') || lowerQuery.includes('breakouts')) {
+      return MEDGLOW_KNOWLEDGE.safety.purging
     }
 
     if (lowerQuery.includes('hello') || lowerQuery.includes('hi') || lowerQuery.includes('hey')) {
@@ -131,7 +190,7 @@ export default function GlowMayaChatbot() {
       return "Thank you for chatting with me! Have a wonderful day. Remember to take care of your skin!"
     }
 
-    return "I'm here to help! You can ask me about our location, delivery service, opening hours, or skincare basics like facewash, moisturizer, toner, serum, eye cream, and sunblock. What would you like to know?"
+    return "I'm here to help! You can ask about location, delivery, opening hours, skincare routines, ingredients, or skin concerns. What would you like to know?"
   }
 
   const handleSend = () => {
@@ -164,18 +223,30 @@ export default function GlowMayaChatbot() {
     }
   }
 
+  const quickQuestions = [
+    'Where is Medglow Pharmacy located?',
+    'Opening hours',
+    'Delivery info',
+    'Daily skincare routine',
+    'Oily skin routine',
+    'Melasma treatment',
+    'Sunscreen importance',
+    'Glycolic acid info',
+    'Kojic acid info'
+  ]
+
   return (
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-16 h-16 bg-amber-400 text-slate-950 rounded-full shadow-lg hover:bg-amber-500 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-amber-400/50"
+        className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-16 h-16 bg-amber-400 text-slate-950 rounded-full shadow-lg hover:bg-amber-500 transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-amber-400/50"
         aria-label="Chat with GlowMaya"
       >
         <Leaf className="w-8 h-8" />
       </button>
 
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-96 h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200">
+        <div className="fixed bottom-24 right-6 z-50 w-96 h-[550px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200">
           <div className="bg-amber-400 text-slate-950 p-4 flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center">
@@ -183,7 +254,7 @@ export default function GlowMayaChatbot() {
               </div>
               <div>
                 <h3 className="font-bold text-lg">GlowMaya</h3>
-                <p className="text-xs opacity-80">MedGlow Pharmacy Assistant</p>
+                <p className="text-xs text-slate-800">MedGlow Pharmacy Assistant</p>
               </div>
             </div>
             <button
@@ -212,18 +283,18 @@ export default function GlowMayaChatbot() {
                 </div>
               </div>
             ))}
-            {messages.length === 1 && (
+            {messages.length <= 2 && (
               <div className="flex flex-col space-y-2">
-                <p className="text-xs text-slate-500">Quick questions:</p>
+                <p className="text-xs text-slate-600 font-medium">Quick questions:</p>
                 <div className="flex flex-wrap gap-2">
-                  {['Opening hours', 'Delivery info', 'Skincare routine', 'Facewash', 'Moisturizer', 'Sunblock'].map((q) => (
+                  {quickQuestions.map((q) => (
                     <button
                       key={q}
                       onClick={() => {
                         setInputValue(q)
-                        setTimeout(() => handleSend(), 0)
+                        setTimeout(() => handleSend(), 10)
                       }}
-                      className="text-xs px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-full hover:bg-slate-200 transition"
+                      className="text-xs px-3 py-1.5 bg-white border border-slate-300 text-slate-900 rounded-full hover:bg-slate-100 transition"
                     >
                       {q}
                     </button>
