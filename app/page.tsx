@@ -767,7 +767,7 @@ export default function Page() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Phone (optional)</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1">Phone *</label>
                 <input
                   type="tel"
                   placeholder="Your phone number"
