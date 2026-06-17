@@ -984,15 +984,14 @@ export default function Page() {
                     visibleListingProducts.map((product) => (
                       <div
                         key={product.id}
-                        className="bg-white border border-slate-200 p-4 rounded-3xl flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition h-52"
+                        className="bg-white border border-slate-200 p-4 rounded-3xl flex items-center justify-center text-center shadow-sm hover:shadow-md transition h-52"
                       >
                         <img
                           src={product.logo_url}
-                          alt={`${product.name} image`}
-                          className="h-28 w-auto object-contain mb-4"
+                          alt={product.name || 'product image'}
+                          className="h-28 w-auto object-contain"
                           loading="lazy"
                         />
-                        <span className="text-sm font-semibold text-slate-900 leading-tight">{product.name}</span>
                       </div>
                     ))
                   ) : (
