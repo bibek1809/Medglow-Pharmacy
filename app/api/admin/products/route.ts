@@ -47,7 +47,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json().catch(() => null)
-  const { name, logo_url } = body || {}
+  const { name, logo_url, type } = body || {}
 
   if (!name || !logo_url) {
     return Response.json({ error: 'Missing product name or logo_url' }, { status: 400 })
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
 
   const adminClient = createAdminClient()
   const { error: insertError } = await adminClient.from('products').insert([
-    { name, logo_url },
+    { name, logo_url, type: type === 'listing' ? 'listing' : 'brand' },
   ])
 
   if (insertError) {
@@ -73,7 +73,7 @@ export async function PATCH(req: Request) {
   }
 
   const body = await req.json().catch(() => null)
-  const { id, name, logo_url } = body || {}
+  const { id, name, logo_url, type } = body || {}
 
   if (!id || !name || !logo_url) {
     return Response.json({ error: 'Missing product id, name, or logo_url' }, { status: 400 })
@@ -82,7 +82,12 @@ export async function PATCH(req: Request) {
   const adminClient = createAdminClient()
   const { error: updateError } = await adminClient
     .from('products')
-    .update({ name, logo_url, updated_at: new Date() })
+    .update({
+      name,
+      logo_url,
+      type: type === 'listing' ? 'listing' : 'brand',
+      updated_at: new Date(),
+    })
     .eq('id', id)
 
   if (updateError) {
