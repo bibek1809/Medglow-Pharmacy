@@ -18,15 +18,5 @@ export async function POST(req: Request) {
     return Response.json({ error: error.message }, { status: 401 })
   }
 
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-  if (userError) {
-    return Response.json({ error: userError.message }, { status: 401 })
-  }
-
-  const user = userData?.user
-  if (!user || !(user.user_metadata as any)?.is_admin) {
-    return Response.json({ error: 'Admin credentials required' }, { status: 403 })
-  }
-
-  return Response.json({ success: true, user: user.email })
+  return Response.json({ success: true, user: data?.user?.email })
 }
