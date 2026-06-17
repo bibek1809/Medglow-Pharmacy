@@ -41,6 +41,20 @@ export default function Page() {
   const [submitError, setSubmitError] = useState('')
   const [showInquiryModal, setShowInquiryModal] = useState(false)
   const [supabase, setSupabase] = useState<any>(null)
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set())
+  const [loadingImages, setLoadingImages] = useState<Set<string>>(new Set())
+
+  const handleImageError = (url: string) => {
+    setFailedImages((prev) => new Set([...prev, url]))
+  }
+
+  const handleImageLoad = (url: string) => {
+    setLoadingImages((prev) => {
+      const updated = new Set(prev)
+      updated.delete(url)
+      return updated
+    })
+  }
 
   useEffect(() => {
     const link = document.createElement('link')
@@ -766,11 +780,19 @@ export default function Page() {
                         <tr key={product.id} className="border-t border-slate-700 hover:bg-slate-700/50">
                           <td className="px-6 py-3 font-medium">{product.name}</td>
                           <td className="px-6 py-3">
-                            <img
-                              src={product.logo_url}
-                              alt={product.name}
-                              className="h-12 w-auto object-contain"
-                            />
+                            {failedImages.has(product.logo_url) ? (
+                              <div className="h-12 w-12 flex items-center justify-center text-slate-500 bg-slate-700 rounded">
+                                <i className="fas fa-image text-sm opacity-40"></i>
+                              </div>
+                            ) : (
+                              <img
+                                src={product.logo_url}
+                                alt={product.name}
+                                className="h-12 w-auto object-contain"
+                                onLoad={() => handleImageLoad(product.logo_url)}
+                                onError={() => handleImageError(product.logo_url)}
+                              />
+                            )}
                           </td>
                           <td className="px-6 py-3 text-sm text-slate-400">{product.logo_url}</td>
                           <td className="px-6 py-3 text-slate-300 text-sm capitalize">{(product.type ?? 'brand') === 'listing' ? 'Listing' : 'Brand'}</td>
@@ -1114,12 +1136,20 @@ export default function Page() {
                         key={product.id}
                         className="bg-slate-800/50 border border-slate-700/50 p-4 rounded-xl flex flex-col items-center justify-center text-center group hover:border-amber-400/40 transition h-48"
                       >
-                        <img
-                          src={product.logo_url}
-                          alt={`${product.name} image`}
-                          className="h-24 w-auto object-contain mb-3 group-hover:scale-105 transition-transform"
-                          loading="lazy"
-                        />
+                        {failedImages.has(product.logo_url) ? (
+                          <div className="h-24 w-full flex items-center justify-center text-slate-500 mb-3">
+                            <i className="fas fa-image text-3xl opacity-30"></i>
+                          </div>
+                        ) : (
+                          <img
+                            src={product.logo_url}
+                            alt={`${product.name} image`}
+                            className="h-24 w-auto object-contain mb-3 group-hover:scale-105 transition-transform max-w-full"
+                            loading="lazy"
+                            onLoad={() => handleImageLoad(product.logo_url)}
+                            onError={() => handleImageError(product.logo_url)}
+                          />
+                        )}
                         <span className="text-sm font-medium text-slate-200 leading-tight">{product.name}</span>
                       </div>
                     ))
@@ -1178,12 +1208,20 @@ export default function Page() {
                         key={product.id}
                         className="bg-white border border-slate-200 p-4 rounded-3xl flex items-center justify-center text-center shadow-sm hover:shadow-md transition h-52"
                       >
-                        <img
-                          src={product.logo_url}
-                          alt={product.name || 'product image'}
-                          className="h-28 w-auto object-contain"
-                          loading="lazy"
-                        />
+                        {failedImages.has(product.logo_url) ? (
+                          <div className="h-28 w-full flex items-center justify-center text-slate-300 mb-3">
+                            <i className="fas fa-box text-4xl opacity-25"></i>
+                          </div>
+                        ) : (
+                          <img
+                            src={product.logo_url}
+                            alt={product.name || 'product image'}
+                            className="h-28 w-auto object-contain max-w-full"
+                            loading="lazy"
+                            onLoad={() => handleImageLoad(product.logo_url)}
+                            onError={() => handleImageError(product.logo_url)}
+                          />
+                        )}
                       </div>
                     ))
                   ) : (
