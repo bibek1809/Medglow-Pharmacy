@@ -25,6 +25,15 @@ async function requireAdmin(supabase: Awaited<ReturnType<typeof createClient>>) 
 
 export async function GET() {
   const supabase = await createClient()
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+  if (sessionError) {
+    return Response.json({ error: sessionError.message }, { status: 401 })
+  }
+
+  if (!sessionData?.session) {
+    return Response.json({ error: 'No active admin session found' }, { status: 401 })
+  }
+
   const { error } = await requireAdmin(supabase)
   if (error) {
     return Response.json({ error: error.message }, { status: 401 })
