@@ -883,7 +883,7 @@ export default function Page() {
             url: 'https://medglowpharmacy.com',
             logo: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-06-17%20at%207.39.47%20AM-lYqHqlYkytZWfbVVX41lI2CVnioVpJ.jpeg',
             hasMap: 'https://maps.app.goo.gl/PgU5XyrT5geDbR3p9',
-            telephone: '+977-9846774539',
+            telephone: '+977-9763259854',
             email: 'pharmacymedglow@gmail.com',
             address: {
               '@type': 'PostalAddress',
@@ -917,7 +917,7 @@ export default function Page() {
             sameAs: [
               'https://www.instagram.com/medglow.pharmacy.skincare',
               'https://www.tiktok.com/@medglowpharmacy.skincare',
-              'https://wa.me/9779846774539',
+              'https://wa.me/9779763259854',
             ],
             image: [
               'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-06-17%20at%207.39.47%20AM-lYqHqlYkytZWfbVVX41lI2CVnioVpJ.jpeg',
@@ -964,7 +964,7 @@ export default function Page() {
             </a>
           </div>
           <a
-            href="https://wa.me/9779846774539"
+            href="https://wa.me/9779763259854"
             target="_blank"
             rel="noopener noreferrer"
             className="bg-amber-400 text-slate-950 px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-amber-500 transition shadow-lg shadow-amber-400/10 flex items-center space-x-2"
@@ -1042,7 +1042,7 @@ export default function Page() {
                   </a>
                 </p>
                 <p>
-                  <strong className="text-white font-medium">📞 Contact:</strong> +977 9846774539
+                  <strong className="text-white font-medium">📞 Contact:</strong> +977 9763259854
                 </p>
                 <p>
                   <strong className="text-white font-medium">⏰ Policy:</strong> Online ordering is available for non-prescription skincare and baby care items.
@@ -1252,7 +1252,7 @@ export default function Page() {
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-3">Call or message</p>
               <a
-                href="https://wa.me/9779846774539"
+                href="https://wa.me/9779763259854"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 text-slate-900 text-sm font-semibold hover:text-slate-700 transition"
@@ -1263,7 +1263,7 @@ export default function Page() {
                 </span>
                 WhatsApp
               </a>
-              <p className="text-slate-500 text-xs mt-2">+977 9846774539</p>
+              <p className="text-slate-500 text-xs mt-2">+977 9763259854</p>
             </div>
 
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm">
@@ -1451,8 +1451,8 @@ export default function Page() {
           <div className="text-center space-y-2">
             <p className="text-white font-medium text-sm">Contact Us</p>
             <p className="font-light text-slate-500">
-              <a href="tel:+977-9846774539" className="hover:text-amber-400 transition">
-                📞 +977 9846774539
+              <a href="tel:+977-9763259854" className="hover:text-amber-400 transition">
+                📞 +977 9763259854
               </a>
             </p>
             <p className="font-light text-slate-500">
@@ -1479,7 +1479,7 @@ export default function Page() {
           </div>
           <div className="flex items-center justify-center md:justify-end gap-4">
             <a
-              href="https://wa.me/9779846774539"
+              href="https://wa.me/9779763259854"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-white text-xs font-semibold hover:bg-emerald-600 transition"
