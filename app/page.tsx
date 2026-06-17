@@ -1415,7 +1415,7 @@ export default function Page() {
                     Phone number *
                     <input
                       type="tel"
-                      placeholder="+977 9846 774539"
+                      placeholder="+977 9763259854"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       required
