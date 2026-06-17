@@ -18,5 +18,9 @@ export async function POST(req: Request) {
     return Response.json({ error: error.message }, { status: 401 })
   }
 
-  return Response.json({ success: true, user: data?.user?.email })
+  if (!data?.session?.access_token) {
+    return Response.json({ error: 'Auth succeeded but Supabase returned no session token' }, { status: 401 })
+  }
+
+  return Response.json({ success: true, user: data.user?.email })
 }
