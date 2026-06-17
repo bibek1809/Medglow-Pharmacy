@@ -52,15 +52,17 @@ export default function Page() {
 
       if (!response.ok) {
         setIsLoggedIn(false)
-        return
+        return false
       }
 
       setIsLoggedIn(true)
       await fetchInquiries()
       await fetchProducts()
+      return true
     } catch (err) {
       console.error('Unable to verify admin session:', err)
       setIsLoggedIn(false)
+      return false
     }
   }
 
@@ -147,9 +149,10 @@ export default function Page() {
       const result = await response.json()
       if (!response.ok) throw new Error(result?.error || 'Login failed')
 
-      setIsLoggedIn(true)
-      await fetchInquiries()
-      await fetchProducts()
+      const sessionValid = await checkAdminSession()
+      if (!sessionValid) {
+        throw new Error('Authentication succeeded but admin session could not be verified.')
+      }
     } catch (err: any) {
       setSubmitError(err.message || 'Login failed')
     } finally {
