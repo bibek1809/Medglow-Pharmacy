@@ -175,18 +175,18 @@ export default function Page() {
   const services = [
     {
       icon: 'sparkles',
-      title: 'Skin Care Consultation',
-      desc: 'Get personalized regimen building and scientific analysis for acne, hyperpigmentation, hydration, or anti-aging concerns. Walk-ins and bookings are welcome.',
+      title: 'Skin care guidance',
+      desc: 'Personalized skincare recommendations for hydration, glow, and sensitive skin. We help you choose effective, trusted products.',
     },
     {
       icon: 'vial',
-      title: 'Blood Test Services',
-      desc: 'Quick, hygienic blood sample collection right at the pharmacy counter. Get highly reliable laboratory panel diagnostics for general wellness tracking.',
+      title: 'On-site blood testing',
+      desc: 'Fast and hygienic sample collection with clear guidance on results and follow-up care. Designed for routine wellness checks.',
     },
     {
       icon: 'baby',
-      title: 'Baby Care Essentials',
-      desc: 'A safe, premium inventory explicitly tailored for sensitive baby skin, nutrition, and developmental health. Curating trusted clinical baby global lineups.',
+      title: 'Baby care essentials',
+      desc: 'Curated baby-safe products for skin, hygiene, and nutrition. Reliable choices for new parents and growing families.',
     },
   ]
 
@@ -839,26 +839,26 @@ export default function Page() {
           <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
             <div className="inline-flex items-center space-x-2 bg-slate-800 border border-slate-700 text-slate-300 px-3 py-1.5 rounded-full text-xs font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>Visit Us In-Store — Now Fully Open</span>
+              <span>Open Today — Walk-ins Welcome</span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight text-balance">
-              Where Medical Care Meets <span className="text-amber-400">Radiant Skin</span>
+              Friendly pharmacy care for <span className="text-amber-400">skin, baby,</span> and wellbeing
             </h1>
             <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 font-light">
-              Experience modern clinical pharmacy care at Harsha Chowk. Premium dermatologist-recommended global skincare products, trusted baby care essentials, and expert wellness services.
+              Simple guidance, trusted products, and fast support at Harsha Chowk. We help you find the right care, every step of the way.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
               <a
                 href="#order"
                 className="w-full sm:w-auto bg-white text-slate-900 text-center px-8 py-3.5 rounded-xl font-semibold hover:bg-slate-100 transition shadow-lg"
               >
-                Order Skincare & Baby Care
+                Start a request
               </a>
               <a
                 href="#services"
                 className="w-full sm:w-auto bg-slate-800 border border-slate-700 text-center px-8 py-3.5 rounded-xl font-semibold hover:bg-slate-700 transition"
               >
-                Explore Our Services
+                Browse services
               </a>
             </div>
           </div>
@@ -869,10 +869,10 @@ export default function Page() {
                 Now Open
               </div>
               <h3 className="text-lg font-bold mb-4 flex items-center text-amber-400">
-                <i className="fas fa-store mr-2" aria-hidden="true"></i> Visit Our Premium Space
+                <i className="fas fa-store mr-2" aria-hidden="true"></i> Visit Our Friendly Store
               </h3>
               <p className="text-xs text-slate-400 mb-4 font-light">
-                Precision charcoal-crafted displays hosting authentic local and imported global brands.
+                A welcoming pharmacy space with carefully chosen authentic brands and reliable care support.
               </p>
               <div className="space-y-3 text-sm border-t border-slate-700/60 pt-4 text-slate-300 font-light">
                 <p>
@@ -882,7 +882,7 @@ export default function Page() {
                   <strong className="text-white font-medium">📞 Contact:</strong> +977 9846774539
                 </p>
                 <p>
-                  <strong className="text-white font-medium">⏰ Policy:</strong> Online order available for non-medicine ranges only.
+                  <strong className="text-white font-medium">⏰ Policy:</strong> Online ordering is available for non-prescription skincare and baby care items.
                 </p>
               </div>
             </div>
@@ -894,10 +894,10 @@ export default function Page() {
       <section id="services" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
           <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl text-balance">
-            Comprehensive Pharmacy & Wellness Services
+            Simple, trusted care for your daily health
           </h2>
           <p className="text-slate-600 font-light">
-            We do more than just dispense medicine. MedGlow is your community clinic partner for everyday health monitoring and expert specialized care.
+            From skincare advice to wellness checks, our team helps you pick the right products and services with confidence.
           </p>
         </div>
 
@@ -923,13 +923,13 @@ export default function Page() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-12">
             <div className="lg:col-span-4 space-y-4 text-center lg:text-left">
               <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl text-balance">
-                Our Premium Brand Portfolio
+                Trusted brands you can rely on
               </h2>
               <p className="text-slate-400 font-light text-sm leading-relaxed">
-                Strictly committed to authenticity. We hold dynamic direct inventories of top global clinical dermatological brands and natural skincare formulations.
+                Authentic products from trusted names, selected for safety and real results.
               </p>
               <span className="text-xs inline-block bg-slate-800 text-amber-400 px-3 py-1 rounded-md border border-slate-700 font-medium">
-                100% Authentic Products
+                Curated for you
               </span>
             </div>
 
@@ -988,10 +988,10 @@ export default function Page() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-12">
             <div className="lg:col-span-4 space-y-4 text-center lg:text-left">
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl text-balance">
-                Product Available Listing
+                Products available right now
               </h2>
               <p className="text-slate-600 font-light text-sm leading-relaxed">
-                Browse available products currently offered for order. Swipe through the listing to see the latest stock ready for prompt delivery.
+                See what’s currently in stock and ready for quick pickup or delivery. We keep this list fresh so you can order with confidence.
               </p>
               <span className="text-xs inline-block bg-slate-200 text-slate-900 px-3 py-1 rounded-md border border-slate-300 font-medium">
                 Updated daily
@@ -1051,9 +1051,9 @@ export default function Page() {
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-400/5 rounded-full blur-2xl" aria-hidden="true"></div>
 
           <div className="text-center space-y-3 mb-8 relative z-10">
-            <h2 className="text-2xl font-bold text-slate-900 text-balance">Request Expert Care or Product Advice</h2>
+            <h2 className="text-2xl font-bold text-slate-900 text-balance">Need help choosing a product?</h2>
             <p className="text-slate-600 text-sm font-light max-w-2xl mx-auto">
-              Share your request below and our team will respond within 24 hours with tailored recommendations, product availability, and pharmacy support for skincare, baby care, or wellness services.
+              Send us a quick request and our pharmacy team will reply within 24 hours with personalized suggestions, stock updates, and ordering support.
             </p>
           </div>
 
@@ -1143,40 +1143,44 @@ export default function Page() {
             </button>
           </form>
 
+          <div className="mt-4 text-xs text-slate-500 max-w-xl mx-auto text-center">
+            Your request is private and handled securely. We only use your details to support your order and answer your questions.
+          </div>
+
           {/* Order Channels */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 relative z-10 mt-8 pt-6 border-t border-slate-200">
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-3">Quick Contact</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-3">Call or message</p>
               <a
                 href="https://wa.me/9779846774539"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-emerald-700 text-sm font-semibold hover:text-emerald-900 transition"
+                className="flex items-center gap-2 text-slate-900 text-sm font-semibold hover:text-slate-700 transition"
                 aria-label="Order via WhatsApp"
               >
-                <span className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-lg">W</span>
+                <span className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-lg">W</span>
                 WhatsApp
               </a>
               <p className="text-slate-500 text-xs mt-2">+977 9846774539</p>
             </div>
 
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-3">Follow Us</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-3">Stay connected</p>
               <a
                 href="https://www.instagram.com/medglow.pharmacy.skincare"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-pink-600 text-sm font-semibold hover:text-pink-800 transition"
+                className="flex items-center gap-2 text-slate-900 text-sm font-semibold hover:text-slate-700 transition"
                 aria-label="Instagram"
               >
-                <span className="w-10 h-10 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 text-white flex items-center justify-center text-lg">I</span>
+                <span className="w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 text-white flex items-center justify-center text-lg">I</span>
                 Instagram
               </a>
               <p className="text-slate-500 text-xs mt-2">@medglow.pharmacy.skincare</p>
             </div>
 
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-3">Watch</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-3">Latest updates</p>
               <a
                 href="https://www.tiktok.com/@medglowpharmacy.skincare"
                 target="_blank"
@@ -1184,7 +1188,7 @@ export default function Page() {
                 className="flex items-center gap-2 text-slate-900 text-sm font-semibold hover:text-slate-700 transition"
                 aria-label="TikTok"
               >
-                <span className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center text-lg">T</span>
+                <span className="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-lg">T</span>
                 TikTok
               </a>
               <p className="text-slate-500 text-xs mt-2">@medglowpharmacy.skincare</p>
@@ -1193,8 +1197,8 @@ export default function Page() {
 
           {/* Disclaimer */}
           <div className="pt-6 border-t border-slate-100 text-center relative z-10">
-            <p className="text-xs text-slate-500 lowercase tracking-wide max-w-lg mx-auto leading-relaxed">
-              * order can be placed for skin care and baby care only. regular health medicines and scheduled prescription drugs cannot be purchased or shipped via social media messaging or online delivery channels; please visit our physical counter in dadhikot with a certified physician prescription for medicine fulfillment.
+            <p className="text-xs text-slate-500 tracking-wide max-w-lg mx-auto leading-relaxed">
+              * Orders are accepted for non-prescription skincare and baby care products only. Prescription medicines require an in-person purchase with a valid physician prescription at our Dadhikot counter. Customer data is stored securely and used solely to fulfil your request.
             </p>
           </div>
         </div>
@@ -1235,7 +1239,7 @@ export default function Page() {
 
         <div className="text-center text-slate-500 border-t border-slate-800 pt-8 space-y-1">
           <p>&copy; 2026 MedGlow Pharmacy. All Rights Reserved.</p>
-          <p className="text-[10px]">Premium SEO-Optimized Local Pharmacy Hub.</p>
+          <p className="text-[10px]">Trusted pharmacy services with secure customer support and professional care.</p>
         </div>
       </footer>
     </>
