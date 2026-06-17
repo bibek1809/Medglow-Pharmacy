@@ -770,15 +770,53 @@ export default function Page() {
             '@type': 'Pharmacy',
             name: 'MedGlow Pharmacy',
             url: 'https://medglowpharmacy.com',
+            logo: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-06-17%20at%207.39.47%20AM-lYqHqlYkytZWfbVVX41lI2CVnioVpJ.jpeg',
             telephone: '+977-9846774539',
             email: 'pharmacymedglow@gmail.com',
+            address: {
+              '@type': 'PostalAddress',
+              streetAddress: 'Suryabinayak-4, Dadhikot, Harsha Chowk',
+              addressLocality: 'Dadhikot',
+              addressRegion: 'Bagmati Province',
+              postalCode: '44800',
+              addressCountry: 'NP',
+            },
+            geo: {
+              '@type': 'GeoCoordinates',
+              latitude: '27.6833',
+              longitude: '85.3600',
+            },
+            openingHoursSpecification: [
+              {
+                '@type': 'OpeningHoursSpecification',
+                dayOfWeek: [
+                  'Monday',
+                  'Tuesday',
+                  'Wednesday',
+                  'Thursday',
+                  'Friday',
+                  'Saturday',
+                  'Sunday',
+                ],
+                opens: '08:00',
+                closes: '20:00',
+              },
+            ],
+            sameAs: [
+              'https://www.instagram.com/medglow.pharmacy.skincare',
+              'https://www.tiktok.com/@medglowpharmacy.skincare',
+              'https://wa.me/9779846774539',
+            ],
+            image: [
+              'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-06-17%20at%207.39.47%20AM-lYqHqlYkytZWfbVVX41lI2CVnioVpJ.jpeg',
+            ],
           }),
         }}
       />
 
       {/* Top Announcement Bar */}
       <div className="bg-amber-400 text-slate-950 text-xs font-semibold text-center py-2 px-4 shadow-sm">
-        ✨ We are Open! Premium Skincare & Baby Care available in-store and for order. Fast delivery via WhatsApp.
+        ✨ We are Open! Premium skincare & baby care in-store and online. Chat with us on WhatsApp, Instagram, or TikTok.
       </div>
 
       {/* Navigation */}
@@ -1095,10 +1133,12 @@ export default function Page() {
                 href="https://wa.me/9779846774539"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-slate-900 text-sm font-semibold hover:text-slate-700 transition"
+                className="flex items-center gap-3 text-slate-900 text-sm font-semibold hover:text-slate-700 transition"
                 aria-label="Order via WhatsApp"
               >
-                <span className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-lg">W</span>
+                <span className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-lg">
+                  <i className="fab fa-whatsapp"></i>
+                </span>
                 WhatsApp
               </a>
               <p className="text-slate-500 text-xs mt-2">+977 9846774539</p>
@@ -1110,10 +1150,12 @@ export default function Page() {
                 href="https://www.instagram.com/medglow.pharmacy.skincare"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-slate-900 text-sm font-semibold hover:text-slate-700 transition"
+                className="flex items-center gap-3 text-slate-900 text-sm font-semibold hover:text-slate-700 transition"
                 aria-label="Instagram"
               >
-                <span className="w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 text-white flex items-center justify-center text-lg">I</span>
+                <span className="w-10 h-10 rounded-2xl bg-gradient-to-br from-pink-500 via-fuchsia-500 to-amber-400 text-white flex items-center justify-center text-lg">
+                  <i className="fab fa-instagram"></i>
+                </span>
                 Instagram
               </a>
               <p className="text-slate-500 text-xs mt-2">@medglow.pharmacy.skincare</p>
@@ -1125,10 +1167,12 @@ export default function Page() {
                 href="https://www.tiktok.com/@medglowpharmacy.skincare"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-slate-900 text-sm font-semibold hover:text-slate-700 transition"
+                className="flex items-center gap-3 text-slate-900 text-sm font-semibold hover:text-slate-700 transition"
                 aria-label="TikTok"
               >
-                <span className="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-lg">T</span>
+                <span className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center text-lg">
+                  <i className="fab fa-tiktok"></i>
+                </span>
                 TikTok
               </a>
               <p className="text-slate-500 text-xs mt-2">@medglowpharmacy.skincare</p>
@@ -1296,9 +1340,43 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="text-center text-slate-500 border-t border-slate-800 pt-8 space-y-1">
-          <p>&copy; 2026 MedGlow Pharmacy. All Rights Reserved.</p>
-          <p className="text-[10px]">Trusted pharmacy services with secure customer support and professional care.</p>
+        <div className="mt-8 border-t border-slate-800 pt-8 grid grid-cols-1 md:grid-cols-2 gap-6 text-slate-400 text-sm">
+          <div className="space-y-2">
+            <p>&copy; 2026 MedGlow Pharmacy. All Rights Reserved.</p>
+            <p className="text-[10px]">Trusted pharmacy services with secure customer support and professional care.</p>
+          </div>
+          <div className="flex items-center justify-center md:justify-end gap-4">
+            <a
+              href="https://wa.me/9779846774539"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-white text-xs font-semibold hover:bg-emerald-600 transition"
+              aria-label="WhatsApp"
+            >
+              <i className="fab fa-whatsapp" aria-hidden="true"></i>
+              WhatsApp
+            </a>
+            <a
+              href="https://www.instagram.com/medglow.pharmacy.skincare"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-amber-400 px-4 py-2 text-white text-xs font-semibold hover:opacity-90 transition"
+              aria-label="Instagram"
+            >
+              <i className="fab fa-instagram" aria-hidden="true"></i>
+              Instagram
+            </a>
+            <a
+              href="https://www.tiktok.com/@medglowpharmacy.skincare"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-white text-xs font-semibold hover:bg-slate-800 transition"
+              aria-label="TikTok"
+            >
+              <i className="fab fa-tiktok" aria-hidden="true"></i>
+              TikTok
+            </a>
+          </div>
         </div>
       </footer>
     </>
