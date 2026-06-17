@@ -82,11 +82,7 @@ export default function Page() {
       <nav className="sticky top-0 z-50 bg-slate-900 text-white border-b border-slate-800 backdrop-blur-md bg-opacity-95 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <a href="#" className="flex items-center space-x-3">
-            <div className="bg-white text-slate-900 p-2.5 rounded-xl shadow-inner border border-amber-400/40">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-              </svg>
-            </div>
+            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-06-17%20at%207.39.47%20AM-lYqHqlYkytZWfbVVX41lI2CVnioVpJ.jpeg" alt="MedGlow Pharmacy Logo" className="h-12 w-auto object-contain" />
             <div>
               <h1 className="text-xl font-bold tracking-tight block">
                 MedGlow <span className="text-amber-400">Pharmacy</span>
@@ -254,21 +250,33 @@ export default function Page() {
               <span className="text-xs text-emerald-700 mt-1 font-medium">+977 9846774539</span>
             </a>
 
-            <div className="flex flex-col items-center p-6 bg-pink-50 border border-pink-200 rounded-2xl text-center opacity-60 cursor-not-allowed">
-              <div className="w-12 h-12 bg-gradient-to-tr from-amber-500 to-purple-600 text-white rounded-full flex items-center justify-center text-xl mb-3 shadow-md">
+            <a
+              href="https://www.instagram.com/medglow.pharmacy.skincare"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col items-center p-6 bg-pink-50 border border-pink-200 hover:border-pink-400 rounded-2xl transition text-center group"
+              aria-label="Follow us on Instagram"
+            >
+              <div className="w-12 h-12 bg-gradient-to-tr from-amber-500 to-purple-600 text-white rounded-full flex items-center justify-center text-xl mb-3 shadow-md group-hover:scale-105 transition-transform">
                 <i className="fab fa-instagram" aria-hidden="true"></i>
               </div>
               <span className="font-bold text-purple-950 text-sm">Instagram DM</span>
-              <span className="text-xs text-purple-700 mt-1 font-medium">Coming Soon</span>
-            </div>
+              <span className="text-xs text-purple-700 mt-1 font-medium">@medglow.pharmacy.skincare</span>
+            </a>
 
-            <div className="flex flex-col items-center p-6 bg-slate-900 border border-slate-800 rounded-2xl text-center opacity-60 cursor-not-allowed">
-              <div className="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center text-sm mb-3 shadow-md border border-slate-700">
+            <a
+              href="https://www.tiktok.com/@medglowpharmacy.skincare"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col items-center p-6 bg-slate-200 border border-slate-300 hover:border-white rounded-2xl transition text-center group"
+              aria-label="Follow us on TikTok"
+            >
+              <div className="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center text-sm mb-3 shadow-md border border-slate-700 group-hover:scale-105 transition-transform">
                 <i className="fab fa-tiktok" aria-hidden="true"></i>
               </div>
-              <span className="font-bold text-white text-sm">TikTok Message</span>
-              <span className="text-xs text-slate-400 mt-1 font-medium">Coming Soon</span>
-            </div>
+              <span className="font-bold text-slate-900 text-sm">TikTok Profile</span>
+              <span className="text-xs text-slate-600 mt-1 font-medium">@medglowpharmacy.skincare</span>
+            </a>
           </div>
 
           {/* Disclaimer */}
