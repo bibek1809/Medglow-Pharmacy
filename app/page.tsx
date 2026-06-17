@@ -11,6 +11,8 @@ type Product = {
   created_at?: string
 }
 
+const INQUIRY_STATUSES = ['Inquiry received', 'Contacted', 'Ordered', 'Call back', 'Closed'] as const
+
 export default function Page() {
   const [showAdmin, setShowAdmin] = useState(false)
   const [adminEmail, setAdminEmail] = useState('')
@@ -32,8 +34,12 @@ export default function Page() {
     message: '',
     product_interest: 'General Inquiry',
   })
+  const [expandedInquiryId, setExpandedInquiryId] = useState<string | null>(null)
+  const [statusFilter, setStatusFilter] = useState<'All' | typeof INQUIRY_STATUSES[number]>('All')
+  const [searchQuery, setSearchQuery] = useState('')
   const [submitStatus, setSubmitStatus] = useState('')
   const [submitError, setSubmitError] = useState('')
+  const [showInquiryModal, setShowInquiryModal] = useState(false)
   const [supabase, setSupabase] = useState<any>(null)
 
   useEffect(() => {
@@ -174,18 +180,18 @@ export default function Page() {
   const services = [
     {
       icon: 'sparkles',
-      title: 'Skin Care Consultation',
-      desc: 'Get personalized regimen building and scientific analysis for acne, hyperpigmentation, hydration, or anti-aging concerns. Walk-ins and bookings are welcome.',
+      title: 'Skin care guidance',
+      desc: 'Personalized skincare recommendations for hydration, glow, and sensitive skin. We help you choose effective, trusted products.',
     },
     {
       icon: 'vial',
-      title: 'Blood Test Services',
-      desc: 'Quick, hygienic blood sample collection right at the pharmacy counter. Get highly reliable laboratory panel diagnostics for general wellness tracking.',
+      title: 'On-site blood testing',
+      desc: 'Fast and hygienic sample collection with clear guidance on results and follow-up care. Designed for routine wellness checks.',
     },
     {
       icon: 'baby',
-      title: 'Baby Care Essentials',
-      desc: 'A safe, premium inventory explicitly tailored for sensitive baby skin, nutrition, and developmental health. Curating trusted clinical baby global lineups.',
+      title: 'Baby care essentials',
+      desc: 'Curated baby-safe products for skin, hygiene, and nutrition. Reliable choices for new parents and growing families.',
     },
   ]
 
@@ -251,6 +257,49 @@ export default function Page() {
       setSubmitError(err.message || 'Error updating inquiry')
     }
   }
+
+  const normalizeInquiryStatus = (status: string | undefined) => {
+    const normalized = (status || '').toLowerCase()
+    if (normalized === 'pending' || normalized === '') return 'Inquiry received'
+    if (normalized === 'contacted') return 'Contacted'
+    if (normalized === 'converted' || normalized === 'ordered' || normalized === 'complete' || normalized === 'completed') return 'Ordered'
+    if (normalized === 'callback' || normalized === 'call back' || normalized.includes('call')) return 'Call back'
+    if (normalized === 'closed') return 'Closed'
+    return status || 'Inquiry received'
+  }
+
+  const inquiryAnalytics = INQUIRY_STATUSES.reduce((acc, status) => {
+    acc[status] = inquiries.filter((item) => normalizeInquiryStatus(item.status).trim() === status).length
+    return acc
+  }, {} as Record<string, number>)
+
+  const topInquiryTypes = Object.entries(
+    inquiries.reduce((acc, item) => {
+      const type = item.product_interest || 'General Inquiry'
+      acc[type] = (acc[type] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+  )
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+
+  const totalInquiries = inquiries.length
+  const contactRate = totalInquiries ? Math.round((inquiryAnalytics['Contacted'] / totalInquiries) * 100) : 0
+  const orderRate = totalInquiries ? Math.round((inquiryAnalytics['Ordered'] / totalInquiries) * 100) : 0
+  const callbackCount = inquiryAnalytics['Call back'] || 0
+
+  const filteredInquiries = inquiries.filter((item) => {
+    const normalizedStatus = normalizeInquiryStatus(item.status)
+    const matchesStatus = statusFilter === 'All' || normalizedStatus === statusFilter
+    const query = searchQuery.trim().toLowerCase()
+    const matchesSearch =
+      !query ||
+      item.name?.toLowerCase().includes(query) ||
+      item.email?.toLowerCase().includes(query) ||
+      item.phone?.toLowerCase().includes(query) ||
+      item.product_interest?.toLowerCase().includes(query)
+    return matchesStatus && matchesSearch
+  })
 
   // Delete Inquiry
   const deleteInquiry = async (id: string) => {
@@ -381,6 +430,7 @@ export default function Page() {
         message: '',
         product_interest: 'General Inquiry',
       })
+      setShowInquiryModal(false)
       setTimeout(() => setSubmitStatus(''), 5000)
     } catch (err: any) {
       setSubmitError(err.message || 'Failed to submit inquiry')
@@ -501,51 +551,143 @@ export default function Page() {
           {/* Inquiries Tab */}
           {adminTab === 'inquiries' && (
             <div className="space-y-6">
+              <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+                <div className="bg-slate-800 rounded-3xl p-6 border border-slate-700">
+                  <h2 className="text-2xl font-bold mb-4">Inquiry analytics</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    {INQUIRY_STATUSES.map((status) => (
+                      <div key={status} className="rounded-3xl border border-slate-700 bg-slate-900 p-4">
+                        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{status}</p>
+                        <p className="mt-3 text-3xl font-semibold text-amber-400">{inquiryAnalytics[status] || 0}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="rounded-3xl border border-slate-700 bg-slate-900 p-4 text-sm text-slate-300 space-y-3">
+                    <p>Total inquiries: <strong className="text-white">{totalInquiries}</strong></p>
+                    <p>Contact rate: <strong className="text-white">{contactRate}%</strong></p>
+                    <p>Order rate: <strong className="text-white">{orderRate}%</strong></p>
+                    <p>Follow-up queue: <strong className="text-white">{callbackCount}</strong> customers need callback.</p>
+                  </div>
+                  <div className="mt-6 rounded-3xl border border-slate-700 bg-slate-900 p-4 text-sm text-slate-300">
+                    <p className="font-semibold text-slate-100">Top inquiry types</p>
+                    <ul className="mt-3 space-y-2">
+                      {topInquiryTypes.map(([type, value]) => (
+                        <li key={type} className="flex items-center justify-between gap-2 text-slate-300">
+                          <span>{type}</span>
+                          <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-amber-400">{value}</span>
+                        </li>
+                      ))}
+                      {topInquiryTypes.length === 0 && <li className="text-slate-500">No inquiries yet.</li>}
+                    </ul>
+                  </div>
+                </div>
+                <div className="bg-slate-800 rounded-3xl p-6 border border-slate-700">
+                  <h2 className="text-2xl font-bold mb-4">Filter inquiries</h2>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <button
+                      type="button"
+                      onClick={() => setStatusFilter('All')}
+                      className={`rounded-full px-4 py-2 text-sm transition ${statusFilter === 'All' ? 'bg-amber-400 text-slate-900' : 'bg-slate-900 text-slate-300 hover:bg-slate-700'}`}
+                    >
+                      All
+                    </button>
+                    {INQUIRY_STATUSES.map((status) => (
+                      <button
+                        key={status}
+                        type="button"
+                        onClick={() => setStatusFilter(status)}
+                        className={`rounded-full px-4 py-2 text-sm transition ${statusFilter === status ? 'bg-amber-400 text-slate-900' : 'bg-slate-900 text-slate-300 hover:bg-slate-700'}`}
+                      >
+                        {status}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="rounded-3xl border border-slate-700 bg-slate-900 p-4">
+                    <label className="block text-sm text-slate-400 mb-2">Search by name, email, phone, or inquiry type</label>
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full rounded-3xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-400"
+                      placeholder="Search inquiries..."
+                    />
+                  </div>
+                </div>
+              </div>
               <div className="bg-slate-800 rounded-lg overflow-hidden">
                 <table className="w-full">
                   <thead className="bg-slate-700">
                     <tr>
                       <th className="px-6 py-3 text-left">Name</th>
                       <th className="px-6 py-3 text-left">Email</th>
-                      <th className="px-6 py-3 text-left">Product</th>
+                      <th className="px-6 py-3 text-left">Inquiry Type</th>
+                      <th className="px-6 py-3 text-left">Notes</th>
                       <th className="px-6 py-3 text-left">Status</th>
                       <th className="px-6 py-3 text-left">Date</th>
                       <th className="px-6 py-3 text-left">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {inquiries.map((inquiry) => (
-                      <tr key={inquiry.id} className="border-t border-slate-700 hover:bg-slate-700/50">
-                        <td className="px-6 py-3">{inquiry.name}</td>
-                        <td className="px-6 py-3 text-blue-400">
-                          <a href={`mailto:${inquiry.email}`}>{inquiry.email}</a>
-                        </td>
-                        <td className="px-6 py-3">{inquiry.product_interest}</td>
-                        <td className="px-6 py-3">
-                          <select
-                            value={inquiry.status}
-                            onChange={(e) => updateInquiryStatus(inquiry.id, e.target.value)}
-                            className="bg-slate-700 border border-slate-600 rounded px-3 py-1 text-sm"
-                          >
-                            <option>pending</option>
-                            <option>contacted</option>
-                            <option>converted</option>
-                            <option>closed</option>
-                          </select>
-                        </td>
-                        <td className="px-6 py-3 text-slate-400 text-sm">
-                          {new Date(inquiry.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-3">
-                          <button
-                            onClick={() => deleteInquiry(inquiry.id)}
-                            className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition"
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {filteredInquiries.map((inquiry) => {
+                      const isExpanded = expandedInquiryId === inquiry.id
+                      const shortMessage = inquiry.message?.length > 100 ? inquiry.message.slice(0, 100) + '...' : inquiry.message
+                      return (
+                        <>
+                          <tr key={inquiry.id} className="border-t border-slate-700 hover:bg-slate-700/50">
+                            <td className="px-6 py-3 align-top">{inquiry.name}</td>
+                            <td className="px-6 py-3 align-top text-blue-400">
+                              <a href={`mailto:${inquiry.email}`}>{inquiry.email}</a>
+                            </td>
+                            <td className="px-6 py-3 align-top">{inquiry.product_interest}</td>
+                            <td className="px-6 py-3 align-top max-w-xs text-sm text-slate-300 leading-relaxed">
+                              <div className="space-y-2">
+                                <p>{shortMessage || '—'}</p>
+                                {inquiry.message && inquiry.message.length > 100 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setExpandedInquiryId(isExpanded ? null : inquiry.id)}
+                                    className="text-amber-400 hover:text-amber-300 text-xs font-semibold"
+                                  >
+                                    {isExpanded ? 'Show less' : 'Read more'}
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-3 align-top">
+                              <select
+                                value={normalizeInquiryStatus(inquiry.status)}
+                                onChange={(e) => updateInquiryStatus(inquiry.id, e.target.value)}
+                                className="bg-slate-700 border border-slate-600 rounded px-3 py-1 text-sm"
+                              >
+                                {INQUIRY_STATUSES.map((statusOption) => (
+                                  <option key={statusOption} value={statusOption}>
+                                    {statusOption}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="px-6 py-3 text-slate-400 text-sm">
+                              {new Date(inquiry.created_at).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-3 align-top">
+                              <button
+                                onClick={() => deleteInquiry(inquiry.id)}
+                                className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                          {isExpanded && (
+                            <tr className="bg-slate-900 border-t border-slate-700">
+                              <td colSpan={7} className="px-6 py-4 text-slate-300 text-sm leading-relaxed">
+                                <strong className="text-slate-100">Full message:</strong>
+                                <p className="mt-2 whitespace-pre-line">{inquiry.message}</p>
+                              </td>
+                            </tr>
+                          )}
+                    </>
+                  )})}
                   </tbody>
                 </table>
               </div>
@@ -739,15 +881,54 @@ export default function Page() {
             '@type': 'Pharmacy',
             name: 'MedGlow Pharmacy',
             url: 'https://medglowpharmacy.com',
+            logo: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-06-17%20at%207.39.47%20AM-lYqHqlYkytZWfbVVX41lI2CVnioVpJ.jpeg',
+            hasMap: 'https://maps.app.goo.gl/PgU5XyrT5geDbR3p9',
             telephone: '+977-9846774539',
             email: 'pharmacymedglow@gmail.com',
+            address: {
+              '@type': 'PostalAddress',
+              streetAddress: 'Suryabinayak-4, Dadhikot, Harsha Chowk',
+              addressLocality: 'Dadhikot',
+              addressRegion: 'Bagmati Province',
+              postalCode: '44800',
+              addressCountry: 'NP',
+            },
+            geo: {
+              '@type': 'GeoCoordinates',
+              latitude: '27.6833',
+              longitude: '85.3600',
+            },
+            openingHoursSpecification: [
+              {
+                '@type': 'OpeningHoursSpecification',
+                dayOfWeek: [
+                  'Monday',
+                  'Tuesday',
+                  'Wednesday',
+                  'Thursday',
+                  'Friday',
+                  'Saturday',
+                  'Sunday',
+                ],
+                opens: '08:00',
+                closes: '20:00',
+              },
+            ],
+            sameAs: [
+              'https://www.instagram.com/medglow.pharmacy.skincare',
+              'https://www.tiktok.com/@medglowpharmacy.skincare',
+              'https://wa.me/9779846774539',
+            ],
+            image: [
+              'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-06-17%20at%207.39.47%20AM-lYqHqlYkytZWfbVVX41lI2CVnioVpJ.jpeg',
+            ],
           }),
         }}
       />
 
       {/* Top Announcement Bar */}
       <div className="bg-amber-400 text-slate-950 text-xs font-semibold text-center py-2 px-4 shadow-sm">
-        ✨ We are Open! Premium Skincare & Baby Care available in-store and for order. Fast delivery via WhatsApp.
+        ✨ We are Open! Premium skincare & baby care in-store and online. Chat with us on WhatsApp, Instagram, or TikTok.
       </div>
 
       {/* Navigation */}
@@ -810,26 +991,27 @@ export default function Page() {
           <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
             <div className="inline-flex items-center space-x-2 bg-slate-800 border border-slate-700 text-slate-300 px-3 py-1.5 rounded-full text-xs font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>Visit Us In-Store — Now Fully Open</span>
+              <span>Open Today — Walk-ins Welcome</span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight text-balance">
-              Where Medical Care Meets <span className="text-amber-400">Radiant Skin</span>
+              Friendly pharmacy care for <span className="text-amber-400">skin, baby,</span> and wellbeing
             </h1>
             <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 font-light">
-              Experience modern clinical pharmacy care at Harsha Chowk. Premium dermatologist-recommended global skincare products, trusted baby care essentials, and expert wellness services.
+              Simple guidance, trusted products, and fast support at Harsha Chowk. We help you find the right care, every step of the way.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
-              <a
-                href="#order"
+              <button
+                type="button"
+                onClick={() => setShowInquiryModal(true)}
                 className="w-full sm:w-auto bg-white text-slate-900 text-center px-8 py-3.5 rounded-xl font-semibold hover:bg-slate-100 transition shadow-lg"
               >
-                Order Skincare & Baby Care
-              </a>
+                Start a request
+              </button>
               <a
                 href="#services"
                 className="w-full sm:w-auto bg-slate-800 border border-slate-700 text-center px-8 py-3.5 rounded-xl font-semibold hover:bg-slate-700 transition"
               >
-                Explore Our Services
+                Browse services
               </a>
             </div>
           </div>
@@ -840,20 +1022,30 @@ export default function Page() {
                 Now Open
               </div>
               <h3 className="text-lg font-bold mb-4 flex items-center text-amber-400">
-                <i className="fas fa-store mr-2" aria-hidden="true"></i> Visit Our Premium Space
+                <i className="fas fa-store mr-2" aria-hidden="true"></i> Visit Our Friendly Store
               </h3>
               <p className="text-xs text-slate-400 mb-4 font-light">
-                Precision charcoal-crafted displays hosting authentic local and imported global brands.
+                A welcoming pharmacy space with carefully chosen authentic brands and reliable care support.
               </p>
               <div className="space-y-3 text-sm border-t border-slate-700/60 pt-4 text-slate-300 font-light">
                 <p>
                   <strong className="text-white font-medium">📍 Address:</strong> Suryabinayak-4, Dadhikot, Harsha Chowk
                 </p>
                 <p>
+                  <a
+                    href="https://maps.app.goo.gl/PgU5XyrT5geDbR3p9"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-amber-300 hover:text-white transition"
+                  >
+                    View on Google Maps
+                  </a>
+                </p>
+                <p>
                   <strong className="text-white font-medium">📞 Contact:</strong> +977 9846774539
                 </p>
                 <p>
-                  <strong className="text-white font-medium">⏰ Policy:</strong> Online order available for non-medicine ranges only.
+                  <strong className="text-white font-medium">⏰ Policy:</strong> Online ordering is available for non-prescription skincare and baby care items.
                 </p>
               </div>
             </div>
@@ -865,10 +1057,10 @@ export default function Page() {
       <section id="services" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
           <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl text-balance">
-            Comprehensive Pharmacy & Wellness Services
+            Simple, trusted care for your daily health
           </h2>
           <p className="text-slate-600 font-light">
-            We do more than just dispense medicine. MedGlow is your community clinic partner for everyday health monitoring and expert specialized care.
+            From skincare advice to wellness checks, our team helps you pick the right products and services with confidence.
           </p>
         </div>
 
@@ -894,13 +1086,13 @@ export default function Page() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-12">
             <div className="lg:col-span-4 space-y-4 text-center lg:text-left">
               <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl text-balance">
-                Our Premium Brand Portfolio
+                Trusted brands you can rely on
               </h2>
               <p className="text-slate-400 font-light text-sm leading-relaxed">
-                Strictly committed to authenticity. We hold dynamic direct inventories of top global clinical dermatological brands and natural skincare formulations.
+                Authentic products from trusted names, selected for safety and real results.
               </p>
               <span className="text-xs inline-block bg-slate-800 text-amber-400 px-3 py-1 rounded-md border border-slate-700 font-medium">
-                100% Authentic Products
+                Curated for you
               </span>
             </div>
 
@@ -959,10 +1151,10 @@ export default function Page() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-12">
             <div className="lg:col-span-4 space-y-4 text-center lg:text-left">
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl text-balance">
-                Product Available Listing
+                Products available right now
               </h2>
               <p className="text-slate-600 font-light text-sm leading-relaxed">
-                Browse available products currently offered for order. Swipe through the listing to see the latest stock ready for prompt delivery.
+                See what’s currently in stock and ready for quick pickup or delivery. We keep this list fresh so you can order with confidence.
               </p>
               <span className="text-xs inline-block bg-slate-200 text-slate-900 px-3 py-1 rounded-md border border-slate-300 font-medium">
                 Updated daily
@@ -1018,162 +1210,241 @@ export default function Page() {
 
       {/* Order Section */}
       <section id="order" className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white border border-slate-200 shadow-lg rounded-2xl p-6 md:p-8 relative overflow-hidden max-w-2xl mx-auto">
+        <div className="bg-white border border-slate-200 shadow-lg rounded-2xl p-8 relative overflow-hidden max-w-3xl mx-auto">
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-400/5 rounded-full blur-2xl" aria-hidden="true"></div>
 
-          <div className="text-center space-y-3 mb-8 relative z-10">
-            <h2 className="text-2xl font-bold text-slate-900 text-balance">Request a Callback / Product Inquiry</h2>
-            <p className="text-slate-600 text-xs font-light">
-              Fill out the form below and we&apos;ll get back to you within 24 hours with personalized recommendations.
+          <div className="text-center space-y-4 mb-10 relative z-10">
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-500 font-semibold">Consultation request</p>
+            <h2 className="text-3xl font-bold text-slate-900 text-balance sm:text-4xl">
+              Request professional product guidance
+            </h2>
+            <p className="text-slate-600 text-sm font-light max-w-2xl mx-auto">
+              Share your needs with our pharmacy experts and get clear, reliable recommendations along with stock availability.
             </p>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmitInquiry} className="space-y-4 relative z-10">
-            {submitStatus && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-xs">
-                {submitStatus}
+          <div className="grid gap-6 relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 text-center shadow-sm">
+                <p className="text-sm font-semibold text-slate-900">Fast response</p>
+                <p className="text-xs text-slate-500 mt-2">We reply within 24 hours with tailored recommendations.</p>
               </div>
-            )}
-
-            {submitError && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-xs">
-                {submitError}
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 text-center shadow-sm">
+                <p className="text-sm font-semibold text-slate-900">Secure handling</p>
+                <p className="text-xs text-slate-500 mt-2">Your inquiry details are treated confidentially.</p>
               </div>
-            )}
-
-            <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Full Name *</label>
-              <input
-                type="text"
-                placeholder="Enter your full name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Email</label>
-              <input
-                type="email"
-                placeholder="your@email.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Phone *</label>
-                <input
-                  type="tel"
-                  placeholder="Your phone number"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  required
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm"
-                />
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 text-center shadow-sm">
+                <p className="text-sm font-semibold text-slate-900">Expert support</p>
+                <p className="text-xs text-slate-500 mt-2">We guide you to suitable skincare, baby care, and wellness products.</p>
               </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Interest</label>
-                <select
-                  value={formData.product_interest}
-                  onChange={(e) => setFormData({ ...formData, product_interest: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm"
-                >
-                  <option>General Inquiry</option>
-                  <option>Skincare Consultation</option>
-                  <option>Blood Test Services</option>
-                  <option>Baby Care Products</option>
-                  <option>Product Recommendation</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Message *</label>
-              <textarea
-                placeholder="Tell us what you need..."
-                value={formData.message}
-                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                required
-                rows={4}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 resize-none text-sm"
-              ></textarea>
             </div>
 
             <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-slate-900 text-white font-semibold py-2.5 rounded-lg hover:bg-slate-800 transition disabled:opacity-50 text-sm"
+              type="button"
+              onClick={() => setShowInquiryModal(true)}
+              className="w-full rounded-3xl bg-slate-900 px-6 py-4 text-sm font-semibold text-white hover:bg-slate-800 transition shadow-lg"
             >
-              {loading ? 'Submitting...' : 'Submit Inquiry'}
+              Open professional inquiry form
             </button>
-          </form>
-
-          {/* Order Channels */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 relative z-10 mt-8 pt-6 border-t border-slate-200">
-            <a
-              href="https://wa.me/9779846774539"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-col items-center p-4 bg-emerald-50 border border-emerald-200 hover:border-emerald-400 rounded-lg transition text-center group"
-              aria-label="Order via WhatsApp"
-            >
-              <div className="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center text-lg mb-2 shadow-md group-hover:scale-105 transition-transform">
-                <i className="fab fa-whatsapp" aria-hidden="true"></i>
-              </div>
-              <span className="font-bold text-emerald-950 text-xs">WhatsApp</span>
-              <span className="text-xs text-emerald-700 mt-0.5 font-medium">+977 9846774539</span>
-            </a>
-
-            <a
-              href="https://www.instagram.com/medglow.pharmacy.skincare"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-col items-center p-4 bg-pink-50 border border-pink-200 hover:border-pink-400 rounded-lg transition text-center group"
-              aria-label="Follow us on Instagram"
-            >
-              <div className="w-10 h-10 bg-gradient-to-tr from-amber-500 to-purple-600 text-white rounded-full flex items-center justify-center text-lg mb-2 shadow-md group-hover:scale-105 transition-transform">
-                <i className="fab fa-instagram" aria-hidden="true"></i>
-              </div>
-              <span className="font-bold text-purple-950 text-xs">Instagram</span>
-              <span className="text-xs text-purple-700 mt-0.5 font-medium">@medglow.pharmacy.skincare</span>
-            </a>
-
-            <a
-              href="https://www.tiktok.com/@medglowpharmacy.skincare"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-col items-center p-4 bg-slate-100 border border-slate-300 hover:border-slate-400 rounded-lg transition text-center group"
-              aria-label="Follow us on TikTok"
-            >
-              <div className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center text-sm mb-2 shadow-md group-hover:scale-105 transition-transform">
-                <i className="fab fa-tiktok" aria-hidden="true"></i>
-              </div>
-              <span className="font-bold text-slate-900 text-xs">TikTok</span>
-              <span className="text-xs text-slate-600 mt-0.5 font-medium">@medglowpharmacy.skincare</span>
-            </a>
           </div>
 
-          {/* Disclaimer */}
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-3 relative z-10 pt-6 border-t border-slate-200">
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-3">Call or message</p>
+              <a
+                href="https://wa.me/9779846774539"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 text-slate-900 text-sm font-semibold hover:text-slate-700 transition"
+                aria-label="Order via WhatsApp"
+              >
+                <span className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-lg">
+                  <i className="fab fa-whatsapp"></i>
+                </span>
+                WhatsApp
+              </a>
+              <p className="text-slate-500 text-xs mt-2">+977 9846774539</p>
+            </div>
+
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-3">Stay connected</p>
+              <a
+                href="https://www.instagram.com/medglow.pharmacy.skincare"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 text-slate-900 text-sm font-semibold hover:text-slate-700 transition"
+                aria-label="Instagram"
+              >
+                <span className="w-10 h-10 rounded-2xl bg-gradient-to-br from-pink-500 via-fuchsia-500 to-amber-400 text-white flex items-center justify-center text-lg">
+                  <i className="fab fa-instagram"></i>
+                </span>
+                Instagram
+              </a>
+              <p className="text-slate-500 text-xs mt-2">@medglow.pharmacy.skincare</p>
+            </div>
+
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-3">Latest updates</p>
+              <a
+                href="https://www.tiktok.com/@medglowpharmacy.skincare"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 text-slate-900 text-sm font-semibold hover:text-slate-700 transition"
+                aria-label="TikTok"
+              >
+                <span className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center text-lg">
+                  <i className="fab fa-tiktok"></i>
+                </span>
+                TikTok
+              </a>
+              <p className="text-slate-500 text-xs mt-2">@medglowpharmacy.skincare</p>
+            </div>
+          </div>
+
           <div className="pt-6 border-t border-slate-100 text-center relative z-10">
-            <p className="text-xs text-slate-500 lowercase tracking-wide max-w-lg mx-auto leading-relaxed">
-              * order can be placed for skin care and baby care only. regular health medicines and scheduled prescription drugs cannot be purchased or shipped via social media messaging or online delivery channels; please visit our physical counter in dadhikot with a certified physician prescription for medicine fulfillment.
+            <p className="text-xs text-slate-500 tracking-wide max-w-lg mx-auto leading-relaxed">
+              * Orders are accepted for non-prescription skincare and baby care products only. Prescription medicines require an in-person purchase with a valid physician prescription at our Dadhikot counter. Customer data is stored securely and used solely to fulfil your request.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
+      {showInquiryModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4"
+          onClick={() => setShowInquiryModal(false)}
+        >
+          <div
+            className="relative w-full max-w-3xl overflow-hidden rounded-[2rem] bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setShowInquiryModal(false)}
+              className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-100"
+              aria-label="Close inquiry form"
+            >
+              &times;
+            </button>
+            <div className="p-8 md:p-10">
+              <div className="mb-6 text-center">
+                <p className="text-xs uppercase tracking-[0.3em] text-amber-500 font-semibold">Secure inquiry</p>
+                <h2 className="mt-3 text-3xl font-bold text-slate-900">Professional assistance request</h2>
+                <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-600 font-light">
+                  Share your needs with our pharmacy experts and receive tailored product guidance, availability updates, and order support.
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmitInquiry} className="space-y-5">
+                {submitStatus && (
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+                    {submitStatus}
+                  </div>
+                )}
+
+                {submitError && (
+                  <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-900">
+                    {submitError}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <label className="block text-sm font-medium text-slate-700">
+                    Full name *
+                    <input
+                      type="text"
+                      placeholder="Enter your full name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
+                      className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    />
+                  </label>
+                  <label className="block text-sm font-medium text-slate-700">
+                    Email address
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    />
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <label className="block text-sm font-medium text-slate-700">
+                    Phone number *
+                    <input
+                      type="tel"
+                      placeholder="+977 9846 774539"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      required
+                      className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    />
+                  </label>
+                  <label className="block text-sm font-medium text-slate-700">
+                    Inquiry type
+                    <select
+                      value={formData.product_interest}
+                      onChange={(e) => setFormData({ ...formData, product_interest: e.target.value })}
+                      className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    >
+                      <option>General Inquiry</option>
+                      <option>Skincare Consultation</option>
+                      <option>Blood Test Services</option>
+                      <option>Baby Care Products</option>
+                      <option>Product Recommendation</option>
+                    </select>
+                  </label>
+                </div>
+
+                <label className="block text-sm font-medium text-slate-700">
+                  Message *
+                  <textarea
+                    placeholder="Please tell us your product needs, service request, or any special details."
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    required
+                    rows={5}
+                    className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  />
+                </label>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs text-slate-500">
+                    Your information is private and used only for this inquiry.
+                  </p>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="inline-flex items-center justify-center rounded-3xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition disabled:opacity-50"
+                  >
+                    {loading ? 'Submitting inquiry...' : 'Submit inquiry'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
       <footer className="bg-slate-900 text-slate-400 text-xs py-12 border-t border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8 items-start mb-8">
           <div className="text-center md:text-left space-y-2">
             <p className="text-white font-medium text-sm">MedGlow Pharmacy</p>
             <p className="font-light text-slate-500">Suryabinayak-4, Dadhikot, Harsha Chowk, Nepal</p>
+            <p className="font-light text-slate-500">
+              <a
+                href="https://maps.app.goo.gl/PgU5XyrT5geDbR3p9"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-amber-400 transition"
+              >
+                Open in Google Maps
+              </a>
+            </p>
             <p className="font-light text-slate-500">Registered Pharmacy Core Space.</p>
           </div>
 
@@ -1201,9 +1472,43 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="text-center text-slate-500 border-t border-slate-800 pt-8 space-y-1">
-          <p>&copy; 2026 MedGlow Pharmacy. All Rights Reserved.</p>
-          <p className="text-[10px]">Premium SEO-Optimized Local Pharmacy Hub.</p>
+        <div className="mt-8 border-t border-slate-800 pt-8 grid grid-cols-1 md:grid-cols-2 gap-6 text-slate-400 text-sm">
+          <div className="space-y-2">
+            <p>&copy; 2026 MedGlow Pharmacy. All Rights Reserved.</p>
+            <p className="text-[10px]">Trusted pharmacy services with secure customer support and professional care.</p>
+          </div>
+          <div className="flex items-center justify-center md:justify-end gap-4">
+            <a
+              href="https://wa.me/9779846774539"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-white text-xs font-semibold hover:bg-emerald-600 transition"
+              aria-label="WhatsApp"
+            >
+              <i className="fab fa-whatsapp" aria-hidden="true"></i>
+              WhatsApp
+            </a>
+            <a
+              href="https://www.instagram.com/medglow.pharmacy.skincare"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-amber-400 px-4 py-2 text-white text-xs font-semibold hover:opacity-90 transition"
+              aria-label="Instagram"
+            >
+              <i className="fab fa-instagram" aria-hidden="true"></i>
+              Instagram
+            </a>
+            <a
+              href="https://www.tiktok.com/@medglowpharmacy.skincare"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-white text-xs font-semibold hover:bg-slate-800 transition"
+              aria-label="TikTok"
+            >
+              <i className="fab fa-tiktok" aria-hidden="true"></i>
+              TikTok
+            </a>
+          </div>
         </div>
       </footer>
     </>
