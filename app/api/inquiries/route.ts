@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 
 const isValidCustomerName = (name: string) => {
   const trimmed = name.trim()
@@ -18,6 +19,14 @@ const isValidPhoneNumber = (phone: string) => {
 }
 
 export async function POST(req: Request) {
+  const cookieStore = await cookies()
+  const sessionCookie = cookieStore.get('inquiry_session')
+
+  // Session-based duplicate check - prevent same session submitting again
+  if (sessionCookie) {
+    return Response.json({ error: 'Your session has already submitted an inquiry. Please wait for our response.' }, { status: 400 })
+  }
+
   const body = await req.json().catch(() => null)
   const { name, email, phone, message, product_interest } = body || {}
 
@@ -40,7 +49,7 @@ export async function POST(req: Request) {
   const supabase = createAdminClient()
   const trimmedPhone = phone.trim()
 
-  // Check for existing inquiry
+  // Phone-based duplicate check
   const { data: existingInquiries, error: existingError } = await supabase
     .from('inquiries')
     .select('id')
@@ -75,6 +84,15 @@ export async function POST(req: Request) {
     })
     return Response.json({ error: error.message }, { status: 500 })
   }
+
+  // Set cookie to prevent session from submitting again
+  cookieStore.set('inquiry_session', 'submitted', {
+    httpOnly: true,
+    secure: true,
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+    path: '/',
+    sameSite: 'strict'
+  })
 
   return Response.json({ success: true })
 }
