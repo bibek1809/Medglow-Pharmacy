@@ -43,6 +43,45 @@ export default function Page() {
     }
   }, [])
 
+  const checkAdminSession = async () => {
+    try {
+      const response = await fetch('/api/admin/session', {
+        method: 'GET',
+        credentials: 'same-origin',
+      })
+
+      if (!response.ok) {
+        setIsLoggedIn(false)
+        return
+      }
+
+      setIsLoggedIn(true)
+      await fetchInquiries()
+      await fetchProducts()
+    } catch (err) {
+      console.error('Unable to verify admin session:', err)
+      setIsLoggedIn(false)
+    }
+  }
+
+  useEffect(() => {
+    if (showAdmin) {
+      checkAdminSession()
+    }
+  }, [showAdmin])
+
+  const parseAdminResponse = async (response: Response, fallbackMessage: string) => {
+    const result = await response.json().catch(() => null)
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        setIsLoggedIn(false)
+        throw new Error(result?.error || 'Admin session expired. Please sign in again.')
+      }
+      throw new Error(result?.error || fallbackMessage)
+    }
+    return result
+  }
+
   // Fetch Products
   const fetchProducts = async () => {
     try {
@@ -52,8 +91,7 @@ export default function Page() {
           method: 'GET',
           credentials: 'same-origin',
         })
-        const result = await response.json()
-        if (!response.ok) throw new Error(result?.error || 'Unable to load products')
+        const result = await parseAdminResponse(response, 'Unable to load products')
         setProducts(result.products || [])
         return
       }
@@ -126,8 +164,7 @@ export default function Page() {
         method: 'GET',
         credentials: 'same-origin',
       })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result?.error || 'Unable to load inquiries')
+      const result = await parseAdminResponse(response, 'Unable to load inquiries')
       setInquiries(result.inquiries || [])
     } catch (err: any) {
       console.error('Error fetching inquiries:', err)
@@ -146,8 +183,7 @@ export default function Page() {
         },
         body: JSON.stringify({ id, status }),
       })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result?.error || 'Error updating inquiry')
+      await parseAdminResponse(response, 'Error updating inquiry')
       await fetchInquiries()
     } catch (err: any) {
       console.error('Error updating inquiry:', err)
@@ -166,8 +202,7 @@ export default function Page() {
         },
         body: JSON.stringify({ id }),
       })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result?.error || 'Error deleting inquiry')
+      await parseAdminResponse(response, 'Error deleting inquiry')
       await fetchInquiries()
     } catch (err: any) {
       console.error('Error deleting inquiry:', err)
@@ -195,8 +230,7 @@ export default function Page() {
           logo_url: newProduct.logo_url,
         }),
       })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result?.error || 'Error adding product')
+      await parseAdminResponse(response, 'Error adding product')
 
       setNewProduct({ name: '', logo_url: '' })
       setSubmitStatus('Product added successfully')
@@ -228,8 +262,7 @@ export default function Page() {
           logo_url: editingProduct.logo_url,
         }),
       })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result?.error || 'Error updating product')
+      await parseAdminResponse(response, 'Error updating product')
       setEditingProduct(null)
       setSubmitStatus('Product updated successfully')
       await fetchProducts()
@@ -250,8 +283,7 @@ export default function Page() {
         },
         body: JSON.stringify({ id }),
       })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result?.error || 'Error deleting product')
+      await parseAdminResponse(response, 'Error deleting product')
       setSubmitStatus('Product deleted successfully')
       await fetchProducts()
       setTimeout(() => setSubmitStatus(''), 3000)
