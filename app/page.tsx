@@ -23,14 +23,15 @@ export default function Page() {
   })
   const [submitStatus, setSubmitStatus] = useState('')
   const [submitError, setSubmitError] = useState('')
-
-  const supabase = createClient()
+  const [supabase, setSupabase] = useState<any>(null)
 
   useEffect(() => {
     const link = document.createElement('link')
     link.rel = 'stylesheet'
     link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
     document.head.appendChild(link)
+
+    setSupabase(createClient())
 
     if (typeof window !== 'undefined') {
       const handleHashChange = () => {
@@ -45,6 +46,7 @@ export default function Page() {
   // Fetch Products
   const fetchProducts = async () => {
     try {
+      if (!supabase) return
       const { data, error } = await supabase.from('products').select('*').order('created_at')
       if (error) throw error
       setProducts(data || [])
@@ -54,8 +56,10 @@ export default function Page() {
   }
 
   useEffect(() => {
-    fetchProducts()
-  }, [])
+    if (supabase) {
+      fetchProducts()
+    }
+  }, [supabase])
 
   const services = [
     {
@@ -82,6 +86,7 @@ export default function Page() {
     setSubmitError('')
 
     try {
+      if (!supabase) throw new Error('Supabase not initialized')
       const { data, error } = await supabase.auth.signInWithPassword({
         email: adminEmail,
         password: adminPassword,
@@ -102,6 +107,7 @@ export default function Page() {
   // Fetch Inquiries for Admin
   const fetchInquiries = async () => {
     try {
+      if (!supabase) return
       const { data, error } = await supabase
         .from('inquiries')
         .select('*')
@@ -117,6 +123,7 @@ export default function Page() {
   // Update Inquiry Status
   const updateInquiryStatus = async (id: string, status: string) => {
     try {
+      if (!supabase) return
       const { error } = await supabase
         .from('inquiries')
         .update({ status, updated_at: new Date() })
@@ -132,6 +139,7 @@ export default function Page() {
   // Delete Inquiry
   const deleteInquiry = async (id: string) => {
     try {
+      if (!supabase) return
       const { error } = await supabase.from('inquiries').delete().eq('id', id)
       if (error) throw error
       await fetchInquiries()
@@ -172,6 +180,7 @@ export default function Page() {
     }
 
     try {
+      if (!supabase) throw new Error('Supabase not initialized')
       const { error } = await supabase
         .from('products')
         .update({ name: editingProduct.name, logo_url: editingProduct.logo_url, updated_at: new Date() })
@@ -190,6 +199,7 @@ export default function Page() {
   // Delete Product
   const handleDeleteProduct = async (id: string) => {
     try {
+      if (!supabase) return
       const { error } = await supabase.from('products').delete().eq('id', id)
       if (error) throw error
       setSubmitStatus('Product deleted successfully')
@@ -208,6 +218,7 @@ export default function Page() {
     setSubmitStatus('')
 
     try {
+      if (!supabase) throw new Error('Supabase not initialized')
       const { error } = await supabase.from('inquiries').insert([formData])
 
       if (error) throw error
@@ -230,7 +241,9 @@ export default function Page() {
 
   // Logout
   const handleLogout = async () => {
-    await supabase.auth.signOut()
+    if (supabase) {
+      await supabase.auth.signOut()
+    }
     setIsLoggedIn(false)
     setAdminEmail('')
     setAdminPassword('')
