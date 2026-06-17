@@ -716,131 +716,145 @@ export default function Page() {
       </section>
 
       {/* Order Section */}
-      <section id="order" className="py-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white border border-slate-200 shadow-xl rounded-3xl p-8 md:p-12 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/5 rounded-full blur-2xl" aria-hidden="true"></div>
+      <section id="order" className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="bg-white border border-slate-200 shadow-lg rounded-2xl p-6 md:p-8 relative overflow-hidden max-w-2xl mx-auto">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-400/5 rounded-full blur-2xl" aria-hidden="true"></div>
 
-          <div className="text-center space-y-4 max-w-2xl mx-auto mb-10 relative z-10">
-            <h2 className="text-3xl font-bold text-slate-900 text-balance">Request a Callback / Product Inquiry</h2>
-            <p className="text-slate-600 text-sm font-light">
+          <div className="text-center space-y-3 mb-8 relative z-10">
+            <h2 className="text-2xl font-bold text-slate-900 text-balance">Request a Callback / Product Inquiry</h2>
+            <p className="text-slate-600 text-xs font-light">
               Fill out the form below and we&apos;ll get back to you within 24 hours with personalized recommendations.
             </p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmitInquiry} className="space-y-6 relative z-10 max-w-2xl mx-auto">
+          <form onSubmit={handleSubmitInquiry} className="space-y-4 relative z-10">
             {submitStatus && (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm">
+              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-xs">
                 {submitStatus}
               </div>
             )}
 
             {submitError && (
-              <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">
+              <div className="p-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-xs">
                 {submitError}
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1">Full Name *</label>
               <input
                 type="text"
-                placeholder="Your Full Name *"
+                placeholder="Enter your full name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
-                className="px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm"
               />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1">Email *</label>
               <input
                 type="email"
-                placeholder="Your Email *"
+                placeholder="your@email.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
-                className="px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm"
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                type="tel"
-                placeholder="Phone Number (optional)"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
-              />
-              <select
-                value={formData.product_interest}
-                onChange={(e) => setFormData({ ...formData, product_interest: e.target.value })}
-                className="px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
-              >
-                <option>General Inquiry</option>
-                <option>Skincare Consultation</option>
-                <option>Blood Test Services</option>
-                <option>Baby Care Products</option>
-                <option>Product Recommendation</option>
-              </select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">Phone (optional)</label>
+                <input
+                  type="tel"
+                  placeholder="Your phone number"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">Interest</label>
+                <select
+                  value={formData.product_interest}
+                  onChange={(e) => setFormData({ ...formData, product_interest: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm"
+                >
+                  <option>General Inquiry</option>
+                  <option>Skincare Consultation</option>
+                  <option>Blood Test Services</option>
+                  <option>Baby Care Products</option>
+                  <option>Product Recommendation</option>
+                </select>
+              </div>
             </div>
 
-            <textarea
-              placeholder="Your Message or Specific Needs *"
-              value={formData.message}
-              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              required
-              rows={5}
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 resize-none"
-            ></textarea>
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1">Message *</label>
+              <textarea
+                placeholder="Tell us what you need..."
+                value={formData.message}
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                required
+                rows={4}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 resize-none text-sm"
+              ></textarea>
+            </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-slate-900 text-white font-semibold py-3.5 rounded-xl hover:bg-slate-800 transition disabled:opacity-50 flex items-center justify-center space-x-2"
+              className="w-full bg-slate-900 text-white font-semibold py-2.5 rounded-lg hover:bg-slate-800 transition disabled:opacity-50 text-sm"
             >
               {loading ? 'Submitting...' : 'Submit Inquiry'}
             </button>
           </form>
 
           {/* Order Channels */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 relative z-10 mt-12 pt-8 border-t border-slate-200">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 relative z-10 mt-8 pt-6 border-t border-slate-200">
             <a
               href="https://wa.me/9779846774539"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col items-center p-6 bg-emerald-50 border border-emerald-200 hover:border-emerald-400 rounded-2xl transition text-center group"
+              className="flex flex-col items-center p-4 bg-emerald-50 border border-emerald-200 hover:border-emerald-400 rounded-lg transition text-center group"
               aria-label="Order via WhatsApp"
             >
-              <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xl mb-3 shadow-md group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center text-lg mb-2 shadow-md group-hover:scale-105 transition-transform">
                 <i className="fab fa-whatsapp" aria-hidden="true"></i>
               </div>
-              <span className="font-bold text-emerald-950 text-sm">WhatsApp Order</span>
-              <span className="text-xs text-emerald-700 mt-1 font-medium">+977 9846774539</span>
+              <span className="font-bold text-emerald-950 text-xs">WhatsApp</span>
+              <span className="text-xs text-emerald-700 mt-0.5 font-medium">+977 9846774539</span>
             </a>
 
             <a
               href="https://www.instagram.com/medglow.pharmacy.skincare"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col items-center p-6 bg-pink-50 border border-pink-200 hover:border-pink-400 rounded-2xl transition text-center group"
+              className="flex flex-col items-center p-4 bg-pink-50 border border-pink-200 hover:border-pink-400 rounded-lg transition text-center group"
               aria-label="Follow us on Instagram"
             >
-              <div className="w-12 h-12 bg-gradient-to-tr from-amber-500 to-purple-600 text-white rounded-full flex items-center justify-center text-xl mb-3 shadow-md group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 bg-gradient-to-tr from-amber-500 to-purple-600 text-white rounded-full flex items-center justify-center text-lg mb-2 shadow-md group-hover:scale-105 transition-transform">
                 <i className="fab fa-instagram" aria-hidden="true"></i>
               </div>
-              <span className="font-bold text-purple-950 text-sm">Instagram DM</span>
-              <span className="text-xs text-purple-700 mt-1 font-medium">@medglow.pharmacy.skincare</span>
+              <span className="font-bold text-purple-950 text-xs">Instagram</span>
+              <span className="text-xs text-purple-700 mt-0.5 font-medium">@medglow.pharmacy.skincare</span>
             </a>
 
             <a
               href="https://www.tiktok.com/@medglowpharmacy.skincare"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col items-center p-6 bg-slate-200 border border-slate-300 hover:border-white rounded-2xl transition text-center group"
+              className="flex flex-col items-center p-4 bg-slate-100 border border-slate-300 hover:border-slate-400 rounded-lg transition text-center group"
               aria-label="Follow us on TikTok"
             >
-              <div className="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center text-sm mb-3 shadow-md border border-slate-700 group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center text-sm mb-2 shadow-md group-hover:scale-105 transition-transform">
                 <i className="fab fa-tiktok" aria-hidden="true"></i>
               </div>
-              <span className="font-bold text-slate-900 text-sm">TikTok Profile</span>
-              <span className="text-xs text-slate-600 mt-1 font-medium">@medglowpharmacy.skincare</span>
+              <span className="font-bold text-slate-900 text-xs">TikTok</span>
+              <span className="text-xs text-slate-600 mt-0.5 font-medium">@medglowpharmacy.skincare</span>
             </a>
           </div>
 
