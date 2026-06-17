@@ -1,7 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { createClient } from '@/lib/supabase/client'
+
+type Product = {
+  id: string
+  name: string
+  logo_url: string
+  type?: 'brand' | 'listing'
+  created_at?: string
+}
 
 export default function Page() {
   const [showAdmin, setShowAdmin] = useState(false)
@@ -9,9 +17,12 @@ export default function Page() {
   const [adminPassword, setAdminPassword] = useState('')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [inquiries, setInquiries] = useState<any[]>([])
-  const [products, setProducts] = useState<any[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [carouselIndex, setCarouselIndex] = useState(0)
+  const [listingIndex, setListingIndex] = useState(0)
   const [loading, setLoading] = useState(false)
   const [adminTab, setAdminTab] = useState('inquiries')
+  const [productTab, setProductTab] = useState<'brands' | 'listing'>('brands')
   const [newProduct, setNewProduct] = useState({ name: '', logo_url: '' })
   const [editingProduct, setEditingProduct] = useState<any>(null)
   const [formData, setFormData] = useState({
@@ -113,6 +124,53 @@ export default function Page() {
     }
   }, [supabase])
 
+  const brandProducts = products.filter((product) => (product.type ?? 'brand') === 'brand')
+  const listingProducts = products.filter((product) => product.type === 'listing')
+
+  useEffect(() => {
+    if (carouselIndex >= brandProducts.length) {
+      setCarouselIndex(Math.max(0, brandProducts.length - 3))
+    }
+  }, [brandProducts.length, carouselIndex])
+
+  useEffect(() => {
+    if (listingIndex >= listingProducts.length) {
+      setListingIndex(Math.max(0, listingProducts.length - 3))
+    }
+  }, [listingProducts.length, listingIndex])
+
+  const hasPrevBrand = carouselIndex > 0
+  const hasNextBrand = carouselIndex + 3 < brandProducts.length
+  const hasPrevListing = listingIndex > 0
+  const hasNextListing = listingIndex + 3 < listingProducts.length
+
+  const visibleBrandProducts = brandProducts.slice(carouselIndex, carouselIndex + 3)
+  const visibleListingProducts = listingProducts.slice(listingIndex, listingIndex + 3)
+
+  const prevBrand = () => {
+    if (hasPrevBrand) {
+      setCarouselIndex(Math.max(0, carouselIndex - 1))
+    }
+  }
+
+  const nextBrand = () => {
+    if (hasNextBrand) {
+      setCarouselIndex(carouselIndex + 1)
+    }
+  }
+
+  const prevListing = () => {
+    if (hasPrevListing) {
+      setListingIndex(Math.max(0, listingIndex - 1))
+    }
+  }
+
+  const nextListing = () => {
+    if (hasNextListing) {
+      setListingIndex(listingIndex + 1)
+    }
+  }
+
   const services = [
     {
       icon: 'sparkles',
@@ -132,7 +190,7 @@ export default function Page() {
   ]
 
   // Admin Login Handler
-  const handleAdminLogin = async (e: React.FormEvent) => {
+  const handleAdminLogin = async (e: FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setSubmitError('')
@@ -214,7 +272,7 @@ export default function Page() {
   }
 
   // Add Product
-  const handleAddProduct = async (e: React.FormEvent) => {
+  const handleAddProduct = async (e: FormEvent) => {
     e.preventDefault()
     if (!newProduct.name || !newProduct.logo_url) {
       setSubmitError('Please fill in all fields')
@@ -231,6 +289,7 @@ export default function Page() {
         body: JSON.stringify({
           name: newProduct.name,
           logo_url: newProduct.logo_url,
+          type: productTab === 'listing' ? 'listing' : 'brand',
         }),
       })
       await parseAdminResponse(response, 'Error adding product')
@@ -245,7 +304,7 @@ export default function Page() {
   }
 
   // Update Product
-  const handleUpdateProduct = async (e: React.FormEvent) => {
+  const handleUpdateProduct = async (e: FormEvent) => {
     e.preventDefault()
     if (!editingProduct.name || !editingProduct.logo_url) {
       setSubmitError('Please fill in all fields')
@@ -263,6 +322,7 @@ export default function Page() {
           id: editingProduct.id,
           name: editingProduct.name,
           logo_url: editingProduct.logo_url,
+          type: editingProduct.type || (productTab === 'listing' ? 'listing' : 'brand'),
         }),
       })
       await parseAdminResponse(response, 'Error updating product')
@@ -296,7 +356,7 @@ export default function Page() {
   }
 
   // Submit Inquiry Form
-  const handleSubmitInquiry = async (e: React.FormEvent) => {
+  const handleSubmitInquiry = async (e: FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setSubmitError('')
@@ -497,7 +557,28 @@ export default function Page() {
             <div className="space-y-8">
               {/* Add New Product */}
               <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-                <h2 className="text-2xl font-bold mb-4">Add New Product</h2>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                  <h2 className="text-2xl font-bold">Add New Product</h2>
+                  <div className="inline-flex rounded-full bg-slate-900/80 p-1 border border-slate-700">
+                    <button
+                      type="button"
+                      onClick={() => setProductTab('brands')}
+                      className={`px-4 py-2 rounded-full transition ${productTab === 'brands' ? 'bg-amber-400 text-slate-900' : 'text-slate-300 hover:text-white'}`}
+                    >
+                      Brand
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setProductTab('listing')}
+                      className={`px-4 py-2 rounded-full transition ${productTab === 'listing' ? 'bg-amber-400 text-slate-900' : 'text-slate-300 hover:text-white'}`}
+                    >
+                      Listing
+                    </button>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-400 mb-4">
+                  Adding a {productTab === 'brands' ? 'brand product' : 'available listing product'} entry.
+                </p>
                 <form onSubmit={handleAddProduct} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input
@@ -509,7 +590,7 @@ export default function Page() {
                     />
                     <input
                       type="text"
-                      placeholder="Logo URL (e.g., /logos/brand.png)"
+                      placeholder="Image URL (e.g., /logos/dermaco.png)"
                       value={newProduct.logo_url}
                       onChange={(e) => setNewProduct({ ...newProduct, logo_url: e.target.value })}
                       className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
@@ -519,7 +600,7 @@ export default function Page() {
                     type="submit"
                     className="bg-emerald-600 hover:bg-emerald-700 px-6 py-2 rounded-lg font-medium transition"
                   >
-                    Add Product
+                    Add {productTab === 'brands' ? 'Brand' : 'Listing'} Product
                   </button>
                 </form>
               </div>
@@ -530,41 +611,48 @@ export default function Page() {
                   <thead className="bg-slate-700">
                     <tr>
                       <th className="px-6 py-3 text-left">Product Name</th>
-                      <th className="px-6 py-3 text-left">Logo Preview</th>
-                      <th className="px-6 py-3 text-left">Logo URL</th>
+                      <th className="px-6 py-3 text-left">Image Preview</th>
+                      <th className="px-6 py-3 text-left">Image URL</th>
+                      <th className="px-6 py-3 text-left">Category</th>
                       <th className="px-6 py-3 text-left">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map((product) => (
-                      <tr key={product.id} className="border-t border-slate-700 hover:bg-slate-700/50">
-                        <td className="px-6 py-3 font-medium">{product.name}</td>
-                        <td className="px-6 py-3">
-                          <img
-                            src={product.logo_url}
-                            alt={product.name}
-                            className="h-12 w-auto object-contain"
-                          />
-                        </td>
-                        <td className="px-6 py-3 text-sm text-slate-400">{product.logo_url}</td>
-                        <td className="px-6 py-3">
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => setEditingProduct(product)}
-                              className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm transition"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteProduct(product.id)}
-                              className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                    {products
+                      .filter((product) => (product.type ?? 'brand') === (productTab === 'brands' ? 'brand' : 'listing'))
+                      .map((product) => (
+                        <tr key={product.id} className="border-t border-slate-700 hover:bg-slate-700/50">
+                          <td className="px-6 py-3 font-medium">{product.name}</td>
+                          <td className="px-6 py-3">
+                            <img
+                              src={product.logo_url}
+                              alt={product.name}
+                              className="h-12 w-auto object-contain"
+                            />
+                          </td>
+                          <td className="px-6 py-3 text-sm text-slate-400">{product.logo_url}</td>
+                          <td className="px-6 py-3 text-slate-300 text-sm capitalize">{(product.type ?? 'brand') === 'listing' ? 'Listing' : 'Brand'}</td>
+                          <td className="px-6 py-3">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => {
+                                  setProductTab(product.type === 'listing' ? 'listing' : 'brands')
+                                  setEditingProduct(product)
+                                }}
+                                className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm transition"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteProduct(product.id)}
+                                className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
@@ -586,13 +674,35 @@ export default function Page() {
                       />
                       <input
                         type="text"
-                        placeholder="Logo URL"
+                        placeholder="Image URL"
                         value={editingProduct.logo_url}
                         onChange={(e) =>
                           setEditingProduct({ ...editingProduct, logo_url: e.target.value })
                         }
                         className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-amber-400"
                       />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProductTab('brands')
+                            setEditingProduct((prev: any) => prev ? { ...prev, type: 'brand' } : prev)
+                          }}
+                          className={`px-4 py-2 rounded-lg transition ${productTab === 'brands' ? 'bg-amber-400 text-slate-900' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}
+                        >
+                          Brand
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProductTab('listing')
+                            setEditingProduct((prev: any) => prev ? { ...prev, type: 'listing' } : prev)
+                          }}
+                          className={`px-4 py-2 rounded-lg transition ${productTab === 'listing' ? 'bg-amber-400 text-slate-900' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}
+                        >
+                          Listing
+                        </button>
+                      </div>
                       <div className="flex space-x-2">
                         <button
                           type="submit"
@@ -664,6 +774,9 @@ export default function Page() {
             </a>
             <a href="#brands" className="hover:text-amber-400 transition">
               Skincare Brands
+            </a>
+            <a href="#listing" className="hover:text-amber-400 transition">
+              Available Listing
             </a>
             <a href="#order" className="hover:text-amber-400 transition">
               How To Order
@@ -791,26 +904,114 @@ export default function Page() {
               </span>
             </div>
 
-            {/* Brands Grid */}
-            <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="bg-slate-800/50 border border-slate-700/50 p-4 rounded-xl flex flex-col items-center justify-center text-center group hover:border-amber-400/40 transition h-32"
+            {/* Product Carousel */}
+            <div className="lg:col-span-8">
+              <div className="flex items-center justify-between mb-6 gap-4">
+                <button
+                  type="button"
+                  onClick={prevBrand}
+                  disabled={!hasPrevBrand}
+                  className="h-12 w-12 rounded-full border border-slate-700 bg-slate-800 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:border-amber-400 transition"
                 >
-                  <img
-                    src={product.logo_url}
-                    alt={`${product.name} logo`}
-                    className="h-16 w-auto object-contain mb-2 group-hover:scale-105 transition-transform"
-                    loading="lazy"
-                  />
-                  <span className="text-xs font-medium text-slate-300 leading-tight">{product.name}</span>
+                  &lt;
+                </button>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1">
+                  {visibleBrandProducts.length > 0 ? (
+                    visibleBrandProducts.map((product) => (
+                      <div
+                        key={product.id}
+                        className="bg-slate-800/50 border border-slate-700/50 p-4 rounded-xl flex flex-col items-center justify-center text-center group hover:border-amber-400/40 transition h-48"
+                      >
+                        <img
+                          src={product.logo_url}
+                          alt={`${product.name} image`}
+                          className="h-24 w-auto object-contain mb-3 group-hover:scale-105 transition-transform"
+                          loading="lazy"
+                        />
+                        <span className="text-sm font-medium text-slate-200 leading-tight">{product.name}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-span-1 sm:col-span-3 bg-slate-800/50 border border-slate-700/50 p-6 rounded-xl text-slate-400 text-center">
+                      No brand products available yet.
+                    </div>
+                  )}
                 </div>
-              ))}
-
-              <div className="bg-slate-800/30 border border-dashed border-slate-700 p-6 rounded-xl flex flex-col items-center justify-center text-center">
-                <span className="text-xs text-slate-500 italic">& Many More Regular Medicines & Hair Care Lines In-Store</span>
+                <button
+                  type="button"
+                  onClick={nextBrand}
+                  disabled={!hasNextBrand}
+                  className="h-12 w-12 rounded-full border border-slate-700 bg-slate-800 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:border-amber-400 transition"
+                >
+                  &gt;
+                </button>
               </div>
+
+              <div className="text-xs text-slate-400 text-right">Showing {Math.min(3, visibleBrandProducts.length)} of {brandProducts.length} brands</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Product Available Listing Section */}
+      <section id="listing" className="py-20 bg-slate-100 border-t border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-12">
+            <div className="lg:col-span-4 space-y-4 text-center lg:text-left">
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl text-balance">
+                Product Available Listing
+              </h2>
+              <p className="text-slate-600 font-light text-sm leading-relaxed">
+                Browse available products currently offered for order. Swipe through the listing to see the latest stock ready for prompt delivery.
+              </p>
+              <span className="text-xs inline-block bg-slate-200 text-slate-900 px-3 py-1 rounded-md border border-slate-300 font-medium">
+                Updated daily
+              </span>
+            </div>
+
+            <div className="lg:col-span-8">
+              <div className="flex items-center justify-between mb-6 gap-4">
+                <button
+                  type="button"
+                  onClick={prevListing}
+                  disabled={!hasPrevListing}
+                  className="h-12 w-12 rounded-full border border-slate-300 bg-white text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed hover:border-amber-400 transition"
+                >
+                  &lt;
+                </button>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1">
+                  {visibleListingProducts.length > 0 ? (
+                    visibleListingProducts.map((product) => (
+                      <div
+                        key={product.id}
+                        className="bg-white border border-slate-200 p-4 rounded-3xl flex flex-col items-center justify-center text-center shadow-sm hover:shadow-md transition h-52"
+                      >
+                        <img
+                          src={product.logo_url}
+                          alt={`${product.name} image`}
+                          className="h-28 w-auto object-contain mb-4"
+                          loading="lazy"
+                        />
+                        <span className="text-sm font-semibold text-slate-900 leading-tight">{product.name}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-span-1 sm:col-span-3 bg-white border border-slate-200 p-6 rounded-3xl text-slate-500 text-center">
+                      No available listings yet.
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={nextListing}
+                  disabled={!hasNextListing}
+                  className="h-12 w-12 rounded-full border border-slate-300 bg-white text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed hover:border-amber-400 transition"
+                >
+                  &gt;
+                </button>
+              </div>
+
+              <div className="text-xs text-slate-500 text-right">Showing {Math.min(3, visibleListingProducts.length)} of {listingProducts.length} available products</div>
             </div>
           </div>
         </div>
