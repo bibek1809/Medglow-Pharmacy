@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 
 const ADMIN_EMAILS = [
   process.env.SUPABASE_ADMIN_EMAIL ?? 'pharmacymedglow@gmail.com',
@@ -24,13 +24,14 @@ async function requireAdmin(supabase: Awaited<ReturnType<typeof createClient>>) 
 }
 
 export async function GET() {
-  const supabase = await createClient()
-  const { error } = await requireAdmin(supabase)
+  const sessionClient = await createClient()
+  const { error } = await requireAdmin(sessionClient)
   if (error) {
     return Response.json({ error: error.message }, { status: 403 })
   }
 
-  const { data, error: queryError } = await supabase.from('products').select('*').order('created_at')
+  const adminClient = createAdminClient()
+  const { data, error: queryError } = await adminClient.from('products').select('*').order('created_at')
   if (queryError) {
     return Response.json({ error: queryError.message }, { status: 500 })
   }
@@ -39,8 +40,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const supabase = await createClient()
-  const { error } = await requireAdmin(supabase)
+  const sessionClient = await createClient()
+  const { error } = await requireAdmin(sessionClient)
   if (error) {
     return Response.json({ error: error.message }, { status: 403 })
   }
@@ -52,7 +53,8 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Missing product name or logo_url' }, { status: 400 })
   }
 
-  const { error: insertError } = await supabase.from('products').insert([
+  const adminClient = createAdminClient()
+  const { error: insertError } = await adminClient.from('products').insert([
     { name, logo_url },
   ])
 
@@ -64,8 +66,8 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  const supabase = await createClient()
-  const { error } = await requireAdmin(supabase)
+  const sessionClient = await createClient()
+  const { error } = await requireAdmin(sessionClient)
   if (error) {
     return Response.json({ error: error.message }, { status: 403 })
   }
@@ -77,7 +79,8 @@ export async function PATCH(req: Request) {
     return Response.json({ error: 'Missing product id, name, or logo_url' }, { status: 400 })
   }
 
-  const { error: updateError } = await supabase
+  const adminClient = createAdminClient()
+  const { error: updateError } = await adminClient
     .from('products')
     .update({ name, logo_url, updated_at: new Date() })
     .eq('id', id)
@@ -90,8 +93,8 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const supabase = await createClient()
-  const { error } = await requireAdmin(supabase)
+  const sessionClient = await createClient()
+  const { error } = await requireAdmin(sessionClient)
   if (error) {
     return Response.json({ error: error.message }, { status: 403 })
   }
@@ -103,7 +106,8 @@ export async function DELETE(req: Request) {
     return Response.json({ error: 'Missing product id' }, { status: 400 })
   }
 
-  const { error: deleteError } = await supabase.from('products').delete().eq('id', id)
+  const adminClient = createAdminClient()
+  const { error: deleteError } = await adminClient.from('products').delete().eq('id', id)
 
   if (deleteError) {
     return Response.json({ error: deleteError.message }, { status: 500 })
