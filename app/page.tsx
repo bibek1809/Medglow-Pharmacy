@@ -47,23 +47,11 @@ export default function Page() {
   const fetchProducts = async () => {
     try {
       if (!supabase) return
-      if (showAdmin && isLoggedIn) {
-        const response = await fetch('/api/admin/products', {
-          method: 'GET',
-          credentials: 'same-origin',
-        })
-        const result = await response.json()
-        if (!response.ok) throw new Error(result?.error || 'Unable to load products')
-        setProducts(result.products || [])
-        return
-      }
-
       const { data, error } = await supabase.from('products').select('*').order('created_at')
       if (error) throw error
       setProducts(data || [])
     } catch (err: any) {
       console.error('Error fetching products:', err)
-      setSubmitError(err.message || 'Error fetching products')
     }
   }
 
@@ -98,16 +86,13 @@ export default function Page() {
     setSubmitError('')
 
     try {
-      const response = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'same-origin',
-        body: JSON.stringify({ email: adminEmail, password: adminPassword }),
+      if (!supabase) throw new Error('Supabase not initialized')
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: adminEmail,
+        password: adminPassword,
       })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result?.error || 'Login failed')
+
+      if (error) throw error
 
       setIsLoggedIn(true)
       await fetchInquiries()
@@ -122,56 +107,44 @@ export default function Page() {
   // Fetch Inquiries for Admin
   const fetchInquiries = async () => {
     try {
-      const response = await fetch('/api/admin/inquiries', {
-        method: 'GET',
-        credentials: 'same-origin',
-      })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result?.error || 'Unable to load inquiries')
-      setInquiries(result.inquiries || [])
+      if (!supabase) return
+      const { data, error } = await supabase
+        .from('inquiries')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setInquiries(data || [])
     } catch (err: any) {
       console.error('Error fetching inquiries:', err)
-      setSubmitError(err.message || 'Error fetching inquiries')
     }
   }
 
   // Update Inquiry Status
   const updateInquiryStatus = async (id: string, status: string) => {
     try {
-      const response = await fetch('/api/admin/inquiries', {
-        method: 'PATCH',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id, status }),
-      })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result?.error || 'Error updating inquiry')
+      if (!supabase) return
+      const { error } = await supabase
+        .from('inquiries')
+        .update({ status, updated_at: new Date() })
+        .eq('id', id)
+
+      if (error) throw error
       await fetchInquiries()
     } catch (err: any) {
       console.error('Error updating inquiry:', err)
-      setSubmitError(err.message || 'Error updating inquiry')
     }
   }
 
   // Delete Inquiry
   const deleteInquiry = async (id: string) => {
     try {
-      const response = await fetch('/api/admin/inquiries', {
-        method: 'DELETE',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id }),
-      })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result?.error || 'Error deleting inquiry')
+      if (!supabase) return
+      const { error } = await supabase.from('inquiries').delete().eq('id', id)
+      if (error) throw error
       await fetchInquiries()
     } catch (err: any) {
       console.error('Error deleting inquiry:', err)
-      setSubmitError(err.message || 'Error deleting inquiry')
     }
   }
 
@@ -184,20 +157,11 @@ export default function Page() {
     }
 
     try {
-      const response = await fetch('/api/admin/products', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: newProduct.name,
-          logo_url: newProduct.logo_url,
-        }),
-      })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result?.error || 'Error adding product')
+      const { error } = await supabase
+        .from('products')
+        .insert([{ name: newProduct.name, logo_url: newProduct.logo_url }])
 
+      if (error) throw error
       setNewProduct({ name: '', logo_url: '' })
       setSubmitStatus('Product added successfully')
       await fetchProducts()
@@ -216,20 +180,13 @@ export default function Page() {
     }
 
     try {
-      const response = await fetch('/api/admin/products', {
-        method: 'PATCH',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: editingProduct.id,
-          name: editingProduct.name,
-          logo_url: editingProduct.logo_url,
-        }),
-      })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result?.error || 'Error updating product')
+      if (!supabase) throw new Error('Supabase not initialized')
+      const { error } = await supabase
+        .from('products')
+        .update({ name: editingProduct.name, logo_url: editingProduct.logo_url, updated_at: new Date() })
+        .eq('id', editingProduct.id)
+
+      if (error) throw error
       setEditingProduct(null)
       setSubmitStatus('Product updated successfully')
       await fetchProducts()
@@ -242,16 +199,9 @@ export default function Page() {
   // Delete Product
   const handleDeleteProduct = async (id: string) => {
     try {
-      const response = await fetch('/api/admin/products', {
-        method: 'DELETE',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id }),
-      })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result?.error || 'Error deleting product')
+      if (!supabase) return
+      const { error } = await supabase.from('products').delete().eq('id', id)
+      if (error) throw error
       setSubmitStatus('Product deleted successfully')
       await fetchProducts()
       setTimeout(() => setSubmitStatus(''), 3000)
@@ -268,15 +218,10 @@ export default function Page() {
     setSubmitStatus('')
 
     try {
-      const response = await fetch('/api/inquiries', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result?.error || 'Failed to submit inquiry')
+      if (!supabase) throw new Error('Supabase not initialized')
+      const { error } = await supabase.from('inquiries').insert([formData])
+
+      if (error) throw error
 
       setSubmitStatus('Inquiry submitted successfully! We will contact you soon.')
       setFormData({
