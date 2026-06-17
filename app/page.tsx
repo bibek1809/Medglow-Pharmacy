@@ -32,6 +32,7 @@ export default function Page() {
     message: '',
     product_interest: 'General Inquiry',
   })
+  const [expandedInquiryId, setExpandedInquiryId] = useState<string | null>(null)
   const [submitStatus, setSubmitStatus] = useState('')
   const [submitError, setSubmitError] = useState('')
   const [supabase, setSupabase] = useState<any>(null)
@@ -507,45 +508,73 @@ export default function Page() {
                     <tr>
                       <th className="px-6 py-3 text-left">Name</th>
                       <th className="px-6 py-3 text-left">Email</th>
-                      <th className="px-6 py-3 text-left">Product</th>
+                      <th className="px-6 py-3 text-left">Inquiry Type</th>
+                      <th className="px-6 py-3 text-left">Notes</th>
                       <th className="px-6 py-3 text-left">Status</th>
                       <th className="px-6 py-3 text-left">Date</th>
                       <th className="px-6 py-3 text-left">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {inquiries.map((inquiry) => (
-                      <tr key={inquiry.id} className="border-t border-slate-700 hover:bg-slate-700/50">
-                        <td className="px-6 py-3">{inquiry.name}</td>
-                        <td className="px-6 py-3 text-blue-400">
-                          <a href={`mailto:${inquiry.email}`}>{inquiry.email}</a>
-                        </td>
-                        <td className="px-6 py-3">{inquiry.product_interest}</td>
-                        <td className="px-6 py-3">
-                          <select
-                            value={inquiry.status}
-                            onChange={(e) => updateInquiryStatus(inquiry.id, e.target.value)}
-                            className="bg-slate-700 border border-slate-600 rounded px-3 py-1 text-sm"
-                          >
-                            <option>pending</option>
-                            <option>contacted</option>
-                            <option>converted</option>
-                            <option>closed</option>
-                          </select>
-                        </td>
-                        <td className="px-6 py-3 text-slate-400 text-sm">
-                          {new Date(inquiry.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-3">
-                          <button
-                            onClick={() => deleteInquiry(inquiry.id)}
-                            className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition"
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {inquiries.map((inquiry) => {
+                      const isExpanded = expandedInquiryId === inquiry.id
+                      const shortMessage = inquiry.message?.length > 100 ? inquiry.message.slice(0, 100) + '...' : inquiry.message
+                      return (
+                        <>
+                          <tr key={inquiry.id} className="border-t border-slate-700 hover:bg-slate-700/50">
+                            <td className="px-6 py-3 align-top">{inquiry.name}</td>
+                            <td className="px-6 py-3 align-top text-blue-400">
+                              <a href={`mailto:${inquiry.email}`}>{inquiry.email}</a>
+                            </td>
+                            <td className="px-6 py-3 align-top">{inquiry.product_interest}</td>
+                            <td className="px-6 py-3 align-top max-w-xs text-sm text-slate-300 leading-relaxed">
+                              <div className="space-y-2">
+                                <p>{shortMessage || '—'}</p>
+                                {inquiry.message && inquiry.message.length > 100 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setExpandedInquiryId(isExpanded ? null : inquiry.id)}
+                                    className="text-amber-400 hover:text-amber-300 text-xs font-semibold"
+                                  >
+                                    {isExpanded ? 'Show less' : 'Read more'}
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-3 align-top">
+                              <select
+                                value={inquiry.status}
+                                onChange={(e) => updateInquiryStatus(inquiry.id, e.target.value)}
+                                className="bg-slate-700 border border-slate-600 rounded px-3 py-1 text-sm"
+                              >
+                                <option>pending</option>
+                                <option>contacted</option>
+                                <option>converted</option>
+                                <option>closed</option>
+                              </select>
+                            </td>
+                            <td className="px-6 py-3 text-slate-400 text-sm">
+                              {new Date(inquiry.created_at).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-3 align-top">
+                              <button
+                                onClick={() => deleteInquiry(inquiry.id)}
+                                className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                          {isExpanded && (
+                            <tr className="bg-slate-900 border-t border-slate-700">
+                              <td colSpan={7} className="px-6 py-4 text-slate-300 text-sm leading-relaxed">
+                                <strong className="text-slate-100">Full message:</strong>
+                                <p className="mt-2 whitespace-pre-line">{inquiry.message}</p>
+                              </td>
+                            </tr>
+                          )}
+                    </>
+                  )})}
                   </tbody>
                 </table>
               </div>
@@ -1022,9 +1051,9 @@ export default function Page() {
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-400/5 rounded-full blur-2xl" aria-hidden="true"></div>
 
           <div className="text-center space-y-3 mb-8 relative z-10">
-            <h2 className="text-2xl font-bold text-slate-900 text-balance">Request a Callback / Product Inquiry</h2>
-            <p className="text-slate-600 text-xs font-light">
-              Fill out the form below and we&apos;ll get back to you within 24 hours with personalized recommendations.
+            <h2 className="text-2xl font-bold text-slate-900 text-balance">Request Expert Care or Product Advice</h2>
+            <p className="text-slate-600 text-sm font-light max-w-2xl mx-auto">
+              Share your request below and our team will respond within 24 hours with tailored recommendations, product availability, and pharmacy support for skincare, baby care, or wellness services.
             </p>
           </div>
 
@@ -1055,10 +1084,10 @@ export default function Page() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Email</label>
+              <label className="block text-xs font-medium text-slate-700 mb-1">Email Address</label>
               <input
                 type="email"
-                placeholder="your@email.com"
+                placeholder="you@example.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm"
@@ -1067,10 +1096,10 @@ export default function Page() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Phone *</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1">Phone Number *</label>
                 <input
                   type="tel"
-                  placeholder="Your phone number"
+                  placeholder="+977 9846 774539"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   required
@@ -1078,7 +1107,7 @@ export default function Page() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Interest</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1">Inquiry Type</label>
                 <select
                   value={formData.product_interest}
                   onChange={(e) => setFormData({ ...formData, product_interest: e.target.value })}
@@ -1096,67 +1125,70 @@ export default function Page() {
             <div>
               <label className="block text-xs font-medium text-slate-700 mb-1">Message *</label>
               <textarea
-                placeholder="Tell us what you need..."
+                placeholder="Please tell us your product needs, service request, or any special details."
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 required
-                rows={4}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 resize-none text-sm"
+                rows={5}
+                className="w-full px-3 py-3 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 resize-none text-sm"
               ></textarea>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-slate-900 text-white font-semibold py-2.5 rounded-lg hover:bg-slate-800 transition disabled:opacity-50 text-sm"
+              className="w-full bg-slate-900 text-white font-semibold py-3 rounded-lg hover:bg-slate-800 transition disabled:opacity-50 text-sm"
             >
-              {loading ? 'Submitting...' : 'Submit Inquiry'}
+              {loading ? 'Sending your request...' : 'Send Inquiry'}
             </button>
           </form>
 
           {/* Order Channels */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 relative z-10 mt-8 pt-6 border-t border-slate-200">
-            <a
-              href="https://wa.me/9779846774539"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-col items-center p-4 bg-emerald-50 border border-emerald-200 hover:border-emerald-400 rounded-lg transition text-center group"
-              aria-label="Order via WhatsApp"
-            >
-              <div className="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center text-lg mb-2 shadow-md group-hover:scale-105 transition-transform">
-                <i className="fab fa-whatsapp" aria-hidden="true"></i>
-              </div>
-              <span className="font-bold text-emerald-950 text-xs">WhatsApp</span>
-              <span className="text-xs text-emerald-700 mt-0.5 font-medium">+977 9846774539</span>
-            </a>
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-3">Quick Contact</p>
+              <a
+                href="https://wa.me/9779846774539"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-emerald-700 text-sm font-semibold hover:text-emerald-900 transition"
+                aria-label="Order via WhatsApp"
+              >
+                <span className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-lg">W</span>
+                WhatsApp
+              </a>
+              <p className="text-slate-500 text-xs mt-2">+977 9846774539</p>
+            </div>
 
-            <a
-              href="https://www.instagram.com/medglow.pharmacy.skincare"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-col items-center p-4 bg-pink-50 border border-pink-200 hover:border-pink-400 rounded-lg transition text-center group"
-              aria-label="Follow us on Instagram"
-            >
-              <div className="w-10 h-10 bg-gradient-to-tr from-amber-500 to-purple-600 text-white rounded-full flex items-center justify-center text-lg mb-2 shadow-md group-hover:scale-105 transition-transform">
-                <i className="fab fa-instagram" aria-hidden="true"></i>
-              </div>
-              <span className="font-bold text-purple-950 text-xs">Instagram</span>
-              <span className="text-xs text-purple-700 mt-0.5 font-medium">@medglow.pharmacy.skincare</span>
-            </a>
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-3">Follow Us</p>
+              <a
+                href="https://www.instagram.com/medglow.pharmacy.skincare"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-pink-600 text-sm font-semibold hover:text-pink-800 transition"
+                aria-label="Instagram"
+              >
+                <span className="w-10 h-10 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 text-white flex items-center justify-center text-lg">I</span>
+                Instagram
+              </a>
+              <p className="text-slate-500 text-xs mt-2">@medglow.pharmacy.skincare</p>
+            </div>
 
-            <a
-              href="https://www.tiktok.com/@medglowpharmacy.skincare"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-col items-center p-4 bg-slate-100 border border-slate-300 hover:border-slate-400 rounded-lg transition text-center group"
-              aria-label="Follow us on TikTok"
-            >
-              <div className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center text-sm mb-2 shadow-md group-hover:scale-105 transition-transform">
-                <i className="fab fa-tiktok" aria-hidden="true"></i>
-              </div>
-              <span className="font-bold text-slate-900 text-xs">TikTok</span>
-              <span className="text-xs text-slate-600 mt-0.5 font-medium">@medglowpharmacy.skincare</span>
-            </a>
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-3">Watch</p>
+              <a
+                href="https://www.tiktok.com/@medglowpharmacy.skincare"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-slate-900 text-sm font-semibold hover:text-slate-700 transition"
+                aria-label="TikTok"
+              >
+                <span className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center text-lg">T</span>
+                TikTok
+              </a>
+              <p className="text-slate-500 text-xs mt-2">@medglowpharmacy.skincare</p>
+            </div>
           </div>
 
           {/* Disclaimer */}
