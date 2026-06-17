@@ -162,6 +162,7 @@ export default function GlowMayaChatbot() {
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const responseCache = useRef<Map<string, string>>(new Map())
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -172,19 +173,36 @@ export default function GlowMayaChatbot() {
   }, [messages])
 
   const getAIResponse = async (query: string): Promise<string> => {
+    const lowerQuery = query.toLowerCase().trim()
+    
+    // Try local fallback first for instant response
+    const fallback = getFallbackResponse(query)
+    if (fallback !== "I'm here to help! Ask about location, delivery, hours, skincare routines, ingredients, skin concerns, or our services.") {
+      return fallback
+    }
+    
+    // Only hit API for complex queries
     try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 3000)
+      
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: query })
+        body: JSON.stringify({ message: query }),
+        signal: controller.signal
       })
+      clearTimeout(timeoutId)
+      
       if (response.ok) {
         const data = await response.json()
-        return data.reply || getFallbackResponse(query)
+        const reply = data.reply || fallback
+        responseCache.current.set(query.toLowerCase(), reply)
+        return reply
       }
-      return getFallbackResponse(query)
+      return fallback
     } catch {
-      return getFallbackResponse(query)
+      return fallback
     }
   }
 
@@ -407,7 +425,7 @@ if (lowerQuery.includes('puffy eyes') || (lowerQuery.includes('puffy') && (lower
       return `💰 Product Pricing:\nFor specific pricing, contact us via WhatsApp at ${MEDGLOW_INFO.contact.phone} or check our Instagram @medglow.pharmacy.skincare.\n\nWe offer competitive prices on all international brands!`
     }
 
-    return "I'm here to help! Ask about location, delivery, hours, skincare routines, ingredients, skin concerns, or our services. What would you like to know?"
+    return "I'm here to help! Ask about location, delivery, hours, skincare routines, ingredients, skin concerns, or our services."
   }
 
   const handleSend = async () => {

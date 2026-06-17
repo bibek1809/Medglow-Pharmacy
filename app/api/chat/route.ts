@@ -358,6 +358,9 @@ async function getChatGPTResponse(message: string): Promise<string | null> {
   const CHAT_GPT_TOKEN = process.env.CHAT_GPT_TOKEN
   if (!CHAT_GPT_TOKEN) return null
 
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 3000)
+
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -370,14 +373,17 @@ async function getChatGPTResponse(message: string): Promise<string | null> {
         messages: [
           {
             role: 'system',
-            content: 'You are GlowMaya, a skincare expert from MedGlow Pharmacy in Dadhikot, Nepal. Provide helpful, accurate skincare advice. Keep responses concise and polite. Always prioritize Medglow pharmacy services and products.'
+            content: 'You are GlowMaya from MedGlow Pharmacy. Give concise skincare advice. Max 100 tokens.'
           },
           { role: 'user', content: message }
         ],
-        max_tokens: 300,
-        temperature: 0.7
-      })
+        max_tokens: 80,
+        temperature: 0.5
+      }),
+      signal: controller.signal
     })
+
+    clearTimeout(timeoutId)
 
     if (response.ok) {
       const data = await response.json()
@@ -385,6 +391,7 @@ async function getChatGPTResponse(message: string): Promise<string | null> {
     }
     return null
   } catch {
+    clearTimeout(timeoutId)
     return null
   }
 }
@@ -408,7 +415,7 @@ export async function POST(req: NextRequest) {
       return Response.json({ reply: chatGPTResponse })
     }
 
-    return Response.json({ reply: "I'm here to help! You can ask about location, delivery, opening hours, skincare routines, ingredients, or skin concerns. What would you like to know?" })
+    return Response.json({ reply: "Ask me about Medglow pharmacy, skincare routines, or skin concerns!" })
   } catch (error) {
     return Response.json({ error: 'Failed to process request' }, { status: 500 })
   }
