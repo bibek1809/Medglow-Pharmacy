@@ -316,7 +316,15 @@ export default function GlowMayaChatbot() {
   return (
     <>
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          if (isOpen && !isMinimized) {
+            setIsOpen(false)
+          } else if (isOpen && isMinimized) {
+            setIsMinimized(false)
+          } else {
+            setIsOpen(true)
+          }
+        }}
         className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-500 text-slate-950 rounded-full shadow-xl hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-amber-400/50"
         aria-label="Chat with GlowMaya"
       >
