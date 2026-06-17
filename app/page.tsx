@@ -35,7 +35,8 @@ export default function Page() {
     product_interest: 'General Inquiry',
   })
   const [expandedInquiryId, setExpandedInquiryId] = useState<string | null>(null)
-  const [draggingInquiryId, setDraggingInquiryId] = useState<string | null>(null)
+  const [statusFilter, setStatusFilter] = useState<'All' | typeof INQUIRY_STATUSES[number]>('All')
+  const [searchQuery, setSearchQuery] = useState('')
   const [submitStatus, setSubmitStatus] = useState('')
   const [submitError, setSubmitError] = useState('')
   const [showInquiryModal, setShowInquiryModal] = useState(false)
@@ -257,10 +258,6 @@ export default function Page() {
     }
   }
 
-  const handleInquiryDragStart = (id: string) => {
-    setDraggingInquiryId(id)
-  }
-
   const normalizeInquiryStatus = (status: string | undefined) => {
     const normalized = (status || '').toLowerCase()
     if (normalized === 'pending' || normalized === '') return 'Inquiry received'
@@ -269,12 +266,6 @@ export default function Page() {
     if (normalized === 'callback' || normalized === 'call back' || normalized.includes('call')) return 'Call back'
     if (normalized === 'closed') return 'Closed'
     return status || 'Inquiry received'
-  }
-
-  const handleInquiryDrop = async (id: string, status: string) => {
-    if (!draggingInquiryId) return
-    await updateInquiryStatus(draggingInquiryId, status)
-    setDraggingInquiryId(null)
   }
 
   const inquiryAnalytics = INQUIRY_STATUSES.reduce((acc, status) => {
@@ -296,6 +287,19 @@ export default function Page() {
   const contactRate = totalInquiries ? Math.round((inquiryAnalytics['Contacted'] / totalInquiries) * 100) : 0
   const orderRate = totalInquiries ? Math.round((inquiryAnalytics['Ordered'] / totalInquiries) * 100) : 0
   const callbackCount = inquiryAnalytics['Call back'] || 0
+
+  const filteredInquiries = inquiries.filter((item) => {
+    const normalizedStatus = normalizeInquiryStatus(item.status)
+    const matchesStatus = statusFilter === 'All' || normalizedStatus === statusFilter
+    const query = searchQuery.trim().toLowerCase()
+    const matchesSearch =
+      !query ||
+      item.name?.toLowerCase().includes(query) ||
+      item.email?.toLowerCase().includes(query) ||
+      item.phone?.toLowerCase().includes(query) ||
+      item.product_interest?.toLowerCase().includes(query)
+    return matchesStatus && matchesSearch
+  })
 
   // Delete Inquiry
   const deleteInquiry = async (id: string) => {
@@ -547,7 +551,7 @@ export default function Page() {
           {/* Inquiries Tab */}
           {adminTab === 'inquiries' && (
             <div className="space-y-6">
-              <div className="grid gap-6 xl:grid-cols-[1.2fr_1fr]">
+              <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
                 <div className="bg-slate-800 rounded-3xl p-6 border border-slate-700">
                   <h2 className="text-2xl font-bold mb-4">Inquiry analytics</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -578,20 +582,35 @@ export default function Page() {
                   </div>
                 </div>
                 <div className="bg-slate-800 rounded-3xl p-6 border border-slate-700">
-                  <h2 className="text-2xl font-bold mb-4">Status board</h2>
-                  <div className="grid gap-4">
+                  <h2 className="text-2xl font-bold mb-4">Filter inquiries</h2>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <button
+                      type="button"
+                      onClick={() => setStatusFilter('All')}
+                      className={`rounded-full px-4 py-2 text-sm transition ${statusFilter === 'All' ? 'bg-amber-400 text-slate-900' : 'bg-slate-900 text-slate-300 hover:bg-slate-700'}`}
+                    >
+                      All
+                    </button>
                     {INQUIRY_STATUSES.map((status) => (
-                      <div
+                      <button
                         key={status}
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={() => handleInquiryDrop(draggingInquiryId || '', status)}
-                        className="rounded-3xl border border-slate-700 bg-slate-900 p-4 min-h-[120px]"
+                        type="button"
+                        onClick={() => setStatusFilter(status)}
+                        className={`rounded-full px-4 py-2 text-sm transition ${statusFilter === status ? 'bg-amber-400 text-slate-900' : 'bg-slate-900 text-slate-300 hover:bg-slate-700'}`}
                       >
-                        <p className="text-sm uppercase tracking-[0.2em] text-slate-400">{status}</p>
-                        <p className="mt-2 text-2xl font-semibold text-amber-400">{inquiryAnalytics[status] || 0}</p>
-                        <p className="mt-3 text-sm text-slate-500">Drop inquiries here to update their stage.</p>
-                      </div>
+                        {status}
+                      </button>
                     ))}
+                  </div>
+                  <div className="rounded-3xl border border-slate-700 bg-slate-900 p-4">
+                    <label className="block text-sm text-slate-400 mb-2">Search by name, email, phone, or inquiry type</label>
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full rounded-3xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-400"
+                      placeholder="Search inquiries..."
+                    />
                   </div>
                 </div>
               </div>
@@ -609,17 +628,12 @@ export default function Page() {
                     </tr>
                   </thead>
                   <tbody>
-                    {inquiries.map((inquiry) => {
+                    {filteredInquiries.map((inquiry) => {
                       const isExpanded = expandedInquiryId === inquiry.id
                       const shortMessage = inquiry.message?.length > 100 ? inquiry.message.slice(0, 100) + '...' : inquiry.message
                       return (
                         <>
-                          <tr
-                            key={inquiry.id}
-                            draggable
-                            onDragStart={() => handleInquiryDragStart(inquiry.id)}
-                            className="border-t border-slate-700 hover:bg-slate-700/50 cursor-grab"
-                          >
+                          <tr key={inquiry.id} className="border-t border-slate-700 hover:bg-slate-700/50">
                             <td className="px-6 py-3 align-top">{inquiry.name}</td>
                             <td className="px-6 py-3 align-top text-blue-400">
                               <a href={`mailto:${inquiry.email}`}>{inquiry.email}</a>
