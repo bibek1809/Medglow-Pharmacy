@@ -35,6 +35,7 @@ export default function Page() {
   const [expandedInquiryId, setExpandedInquiryId] = useState<string | null>(null)
   const [submitStatus, setSubmitStatus] = useState('')
   const [submitError, setSubmitError] = useState('')
+  const [showInquiryModal, setShowInquiryModal] = useState(false)
   const [supabase, setSupabase] = useState<any>(null)
 
   useEffect(() => {
@@ -382,6 +383,7 @@ export default function Page() {
         message: '',
         product_interest: 'General Inquiry',
       })
+      setShowInquiryModal(false)
       setTimeout(() => setSubmitStatus(''), 5000)
     } catch (err: any) {
       setSubmitError(err.message || 'Failed to submit inquiry')
@@ -848,12 +850,13 @@ export default function Page() {
               Simple guidance, trusted products, and fast support at Harsha Chowk. We help you find the right care, every step of the way.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
-              <a
-                href="#order"
+              <button
+                type="button"
+                onClick={() => setShowInquiryModal(true)}
                 className="w-full sm:w-auto bg-white text-slate-900 text-center px-8 py-3.5 rounded-xl font-semibold hover:bg-slate-100 transition shadow-lg"
               >
                 Start a request
-              </a>
+              </button>
               <a
                 href="#services"
                 className="w-full sm:w-auto bg-slate-800 border border-slate-700 text-center px-8 py-3.5 rounded-xl font-semibold hover:bg-slate-700 transition"
@@ -1047,108 +1050,45 @@ export default function Page() {
 
       {/* Order Section */}
       <section id="order" className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white border border-slate-200 shadow-lg rounded-2xl p-6 md:p-8 relative overflow-hidden max-w-2xl mx-auto">
+        <div className="bg-white border border-slate-200 shadow-lg rounded-2xl p-8 relative overflow-hidden max-w-3xl mx-auto">
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-400/5 rounded-full blur-2xl" aria-hidden="true"></div>
 
-          <div className="text-center space-y-3 mb-8 relative z-10">
-            <h2 className="text-2xl font-bold text-slate-900 text-balance">Need help choosing a product?</h2>
+          <div className="text-center space-y-4 mb-10 relative z-10">
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-500 font-semibold">Consultation request</p>
+            <h2 className="text-3xl font-bold text-slate-900 text-balance sm:text-4xl">
+              Request professional product guidance
+            </h2>
             <p className="text-slate-600 text-sm font-light max-w-2xl mx-auto">
-              Send us a quick request and our pharmacy team will reply within 24 hours with personalized suggestions, stock updates, and ordering support.
+              Share your needs with our pharmacy experts and get clear, reliable recommendations along with stock availability.
             </p>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmitInquiry} className="space-y-4 relative z-10">
-            {submitStatus && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-xs">
-                {submitStatus}
+          <div className="grid gap-6 relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 text-center shadow-sm">
+                <p className="text-sm font-semibold text-slate-900">Fast response</p>
+                <p className="text-xs text-slate-500 mt-2">We reply within 24 hours with tailored recommendations.</p>
               </div>
-            )}
-
-            {submitError && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-xs">
-                {submitError}
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 text-center shadow-sm">
+                <p className="text-sm font-semibold text-slate-900">Secure handling</p>
+                <p className="text-xs text-slate-500 mt-2">Your inquiry details are treated confidentially.</p>
               </div>
-            )}
-
-            <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Full Name *</label>
-              <input
-                type="text"
-                placeholder="Enter your full name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Email Address</label>
-              <input
-                type="email"
-                placeholder="you@example.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Phone Number *</label>
-                <input
-                  type="tel"
-                  placeholder="+977 9846 774539"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  required
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm"
-                />
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 text-center shadow-sm">
+                <p className="text-sm font-semibold text-slate-900">Expert support</p>
+                <p className="text-xs text-slate-500 mt-2">We guide you to suitable skincare, baby care, and wellness products.</p>
               </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Inquiry Type</label>
-                <select
-                  value={formData.product_interest}
-                  onChange={(e) => setFormData({ ...formData, product_interest: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm"
-                >
-                  <option>General Inquiry</option>
-                  <option>Skincare Consultation</option>
-                  <option>Blood Test Services</option>
-                  <option>Baby Care Products</option>
-                  <option>Product Recommendation</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Message *</label>
-              <textarea
-                placeholder="Please tell us your product needs, service request, or any special details."
-                value={formData.message}
-                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                required
-                rows={5}
-                className="w-full px-3 py-3 border border-slate-300 rounded-lg text-slate-900 bg-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 resize-none text-sm"
-              ></textarea>
             </div>
 
             <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-slate-900 text-white font-semibold py-3 rounded-lg hover:bg-slate-800 transition disabled:opacity-50 text-sm"
+              type="button"
+              onClick={() => setShowInquiryModal(true)}
+              className="w-full rounded-3xl bg-slate-900 px-6 py-4 text-sm font-semibold text-white hover:bg-slate-800 transition shadow-lg"
             >
-              {loading ? 'Sending your request...' : 'Send Inquiry'}
+              Open professional inquiry form
             </button>
-          </form>
-
-          <div className="mt-4 text-xs text-slate-500 max-w-xl mx-auto text-center">
-            Your request is private and handled securely. We only use your details to support your order and answer your questions.
           </div>
 
-          {/* Order Channels */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 relative z-10 mt-8 pt-6 border-t border-slate-200">
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-3 relative z-10 pt-6 border-t border-slate-200">
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em] mb-3">Call or message</p>
               <a
@@ -1195,7 +1135,6 @@ export default function Page() {
             </div>
           </div>
 
-          {/* Disclaimer */}
           <div className="pt-6 border-t border-slate-100 text-center relative z-10">
             <p className="text-xs text-slate-500 tracking-wide max-w-lg mx-auto leading-relaxed">
               * Orders are accepted for non-prescription skincare and baby care products only. Prescription medicines require an in-person purchase with a valid physician prescription at our Dadhikot counter. Customer data is stored securely and used solely to fulfil your request.
@@ -1204,7 +1143,127 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Footer */}
+      {showInquiryModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4"
+          onClick={() => setShowInquiryModal(false)}
+        >
+          <div
+            className="relative w-full max-w-3xl overflow-hidden rounded-[2rem] bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setShowInquiryModal(false)}
+              className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-100"
+              aria-label="Close inquiry form"
+            >
+              &times;
+            </button>
+            <div className="p-8 md:p-10">
+              <div className="mb-6 text-center">
+                <p className="text-xs uppercase tracking-[0.3em] text-amber-500 font-semibold">Secure inquiry</p>
+                <h2 className="mt-3 text-3xl font-bold text-slate-900">Professional assistance request</h2>
+                <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-600 font-light">
+                  Share your needs with our pharmacy experts and receive tailored product guidance, availability updates, and order support.
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmitInquiry} className="space-y-5">
+                {submitStatus && (
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+                    {submitStatus}
+                  </div>
+                )}
+
+                {submitError && (
+                  <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-900">
+                    {submitError}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <label className="block text-sm font-medium text-slate-700">
+                    Full name *
+                    <input
+                      type="text"
+                      placeholder="Enter your full name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
+                      className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    />
+                  </label>
+                  <label className="block text-sm font-medium text-slate-700">
+                    Email address
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    />
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <label className="block text-sm font-medium text-slate-700">
+                    Phone number *
+                    <input
+                      type="tel"
+                      placeholder="+977 9846 774539"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      required
+                      className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    />
+                  </label>
+                  <label className="block text-sm font-medium text-slate-700">
+                    Inquiry type
+                    <select
+                      value={formData.product_interest}
+                      onChange={(e) => setFormData({ ...formData, product_interest: e.target.value })}
+                      className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    >
+                      <option>General Inquiry</option>
+                      <option>Skincare Consultation</option>
+                      <option>Blood Test Services</option>
+                      <option>Baby Care Products</option>
+                      <option>Product Recommendation</option>
+                    </select>
+                  </label>
+                </div>
+
+                <label className="block text-sm font-medium text-slate-700">
+                  Message *
+                  <textarea
+                    placeholder="Please tell us your product needs, service request, or any special details."
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    required
+                    rows={5}
+                    className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  />
+                </label>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs text-slate-500">
+                    Your information is private and used only for this inquiry.
+                  </p>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="inline-flex items-center justify-center rounded-3xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition disabled:opacity-50"
+                  >
+                    {loading ? 'Submitting inquiry...' : 'Submit inquiry'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
       <footer className="bg-slate-900 text-slate-400 text-xs py-12 border-t border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8 items-start mb-8">
           <div className="text-center md:text-left space-y-2">
