@@ -13,7 +13,7 @@ export default function Page() {
 
   const brands = [
     { name: 'COSRX', logo: '/logos/cosrx.png' },
-    { name: 'Purest', logo: '/logos/purest.png' },
+    { name: 'The Purest Solution', logo: '/logos/purest.png' },
     { name: 'Mamaearth', logo: '/logos/mamaearth.png' },
     { name: 'Plum', logo: '/logos/plum.png' },
     { name: 'The Derma Co', logo: '/logos/the-derma-co.png' },
@@ -22,7 +22,6 @@ export default function Page() {
     { name: 'The Ordinary', logo: '/logos/the-ordinary.png' },
     { name: 'Bioderma', logo: '/logos/bioderma.png' },
     { name: 'CeraVe', logo: '/logos/cerave.png' },
-    { name: 'Cetaphil', logo: '/logos/cetaphil.png' },
   ]
 
   const services = [
