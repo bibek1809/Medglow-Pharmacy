@@ -914,9 +914,7 @@ export default function Page() {
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
-            </div>
+           )}
           )}
 
           {editingNews && (
@@ -976,17 +974,12 @@ export default function Page() {
                     >
                       Cancel
                     </button>
-                  </div>
-                </form>
-              </div>
             </div>
           )}
-        </div>
-      </div>
 
-      {/* Products Tab */}
-      {adminTab === 'products' && (
-        <div className="space-y-8">
+          {/* Products Tab */}
+          {adminTab === 'products' && (
+            <div className="space-y-8">
           {/* Add New Product */}
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">

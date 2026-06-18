@@ -149,10 +149,6 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
 }
 
 
-interface NewsTickerProps {
-  intervalMs?: number
-}
-
 export default function NewsTicker({ intervalMs = 5000 }: NewsTickerProps) {
   const [news, setNews] = useState<NewsItem[]>([])
   const [loading, setLoading] = useState(true)
