@@ -171,7 +171,7 @@ export default function GlowMayaChatbot() {
       </button>
 
       {isOpen && (
-        <div         className={`fixed bottom-24 right-6 z-50 w-[min(94vw,420px)] ${isMinimized ? 'h-16' : 'h-[520px]'} bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 transition-all duration-300`}>
+        <div         className={`fixed bottom-24 right-6 z-50 w-[min(94vw,340px)] ${isMinimized ? 'h-16' : 'h-[400px]'} bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 transition-all duration-300`}>
           <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 p-4 flex items-center justify-between">
             <div className="flex items-center space-x-3 min-w-0">
               <div className="w-11 h-11 bg-slate-950 rounded-full flex items-center justify-center">
