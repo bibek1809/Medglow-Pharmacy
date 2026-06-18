@@ -3,6 +3,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
+import NewsTicker from '@/components/NewsTicker'
+
 type Product = {
   id: string
   name: string
@@ -43,6 +45,9 @@ export default function Page() {
   const [supabase, setSupabase] = useState<any>(null)
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set())
   const [loadingImages, setLoadingImages] = useState<Set<string>>(new Set())
+  const [news, setNews] = useState<any[]>([])
+  const [editingNews, setEditingNews] = useState<any>(null)
+  const [newNews, setNewNews] = useState({ news_title: '', picture_link: '', headline: '', is_active: true })
 
   const handleImageError = (url: string) => {
     setFailedImages((prev) => new Set([...prev, url]))
@@ -89,6 +94,7 @@ export default function Page() {
       setIsLoggedIn(true)
       await fetchInquiries()
       await fetchProducts()
+      await fetchNews()
       return true
     } catch (err) {
       console.error('Unable to verify admin session:', err)
@@ -138,9 +144,36 @@ export default function Page() {
     }
   }
 
+  const fetchNews = async () => {
+    try {
+      if (!supabase) return
+      if (showAdmin && isLoggedIn) {
+        const response = await fetch('/api/admin/news', {
+          method: 'GET',
+          credentials: 'same-origin',
+        })
+        const result = await parseAdminResponse(response, 'Unable to load news')
+        setNews(result.news || [])
+        return
+      }
+      const { data, error } = await supabase.from('news').select('*').eq('is_active', true).order('created_at', { ascending: false })
+      if (error) throw error
+      setNews(data || [])
+    } catch (err: any) {
+      console.error('Error fetching news:', err)
+      setSubmitError(err.message || 'Error fetching news')
+    }
+  }
+
   useEffect(() => {
     if (supabase) {
       fetchProducts()
+    }
+  }, [supabase])
+
+  useEffect(() => {
+    if (supabase) {
+      fetchNews()
     }
   }, [supabase])
 
@@ -418,6 +451,76 @@ export default function Page() {
     }
   }
 
+  // News CRUD
+  const handleAddNews = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!newNews.news_title) {
+      setSubmitError('Please enter news title')
+      return
+    }
+    try {
+      const response = await fetch('/api/admin/news', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newNews),
+      })
+      await parseAdminResponse(response, 'Error adding news')
+      setSubmitStatus('News added successfully')
+      setNewNews({ news_title: '', picture_link: '', headline: '', is_active: true })
+      await fetchNews()
+      setTimeout(() => setSubmitStatus(''), 3000)
+    } catch (err: any) {
+      setSubmitError(err.message || 'Error adding news')
+    }
+  }
+
+  const handleUpdateNews = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!editingNews.news_title) {
+      setSubmitError('Please enter news title')
+      return
+    }
+    try {
+      const response = await fetch('/api/admin/news', {
+        method: 'PATCH',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingNews.id,
+          news_title: editingNews.news_title,
+          picture_link: editingNews.picture_link,
+          headline: editingNews.headline,
+          is_active: editingNews.is_active,
+        }),
+      })
+      await parseAdminResponse(response, 'Error updating news')
+      setEditingNews(null)
+      setSubmitStatus('News updated successfully')
+      await fetchNews()
+      setTimeout(() => setSubmitStatus(''), 3000)
+    } catch (err: any) {
+      setSubmitError(err.message || 'Error updating news')
+    }
+  }
+
+  const handleDeleteNews = async (id: string) => {
+    try {
+      const response = await fetch('/api/admin/news', {
+        method: 'DELETE',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      await parseAdminResponse(response, 'Error deleting news')
+      setSubmitStatus('News deleted successfully')
+      await fetchNews()
+      setTimeout(() => setSubmitStatus(''), 3000)
+    } catch (err: any) {
+      setSubmitError(err.message || 'Error deleting news')
+    }
+  }
+
   // Submit Inquiry Form
   const handleSubmitInquiry = async (e: FormEvent) => {
     e.preventDefault()
@@ -559,6 +662,15 @@ export default function Page() {
                 }`}
             >
               Products ({products.length})
+            </button>
+            <button
+              onClick={() => setAdminTab('news')}
+              className={`px-6 py-3 font-medium transition ${adminTab === 'news'
+                ? 'text-amber-400 border-b-2 border-amber-400'
+                : 'text-slate-400 hover:text-slate-200'
+                }`}
+            >
+              News ({news.length})
             </button>
           </div>
 
@@ -706,33 +818,199 @@ export default function Page() {
             </div>
           )}
 
-          {/* Products Tab */}
-          {adminTab === 'products' && (
+          {/* News Tab */}
+          {adminTab === 'news' && (
             <div className="space-y-8">
-              {/* Add New Product */}
               <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                  <h2 className="text-2xl font-bold">Add New Product</h2>
-                  <div className="inline-flex rounded-full bg-slate-900/80 p-1 border border-slate-700">
+                <h2 className="text-2xl font-bold mb-4">Add News / Notice</h2>
+                <form onSubmit={handleAddNews} className="space-y-4">
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-1">News Title *</label>
+                    <input
+                      type="text"
+                      value={newNews.news_title}
+                      onChange={(e) => setNewNews({ ...newNews, news_title: e.target.value })}
+                      placeholder="e.g. Free delivery for orders above NPR 20000"
+                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-amber-400"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-1">Picture Link (for notice popup)</label>
+                    <input
+                      type="url"
+                      value={newNews.picture_link}
+                      onChange={(e) => setNewNews({ ...newNews, picture_link: e.target.value })}
+                      placeholder="https://example.com/image.jpg"
+                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-1">Headline (ticker text)</label>
+                    <textarea
+                      value={newNews.headline}
+                      onChange={(e) => setNewNews({ ...newNews, headline: e.target.value })}
+                      placeholder="Short headline for moving ticker..."
+                      rows={2}
+                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      id="news-active"
+                      type="checkbox"
+                      checked={newNews.is_active}
+                      onChange={(e) => setNewNews({ ...newNews, is_active: e.target.checked })}
+                      className="rounded border-slate-600 bg-slate-700 text-amber-400 focus:ring-amber-400"
+                    />
+                    <label htmlFor="news-active" className="text-sm text-slate-300">Active</label>
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-amber-400 text-slate-950 font-semibold px-6 py-2 rounded-lg hover:bg-amber-500 transition"
+                  >
+                    Add News
+                  </button>
+                </form>
+              </div>
+
+              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                <h2 className="text-2xl font-bold mb-4">Manage News</h2>
+                {news.length === 0 ? (
+                  <p className="text-slate-400 text-sm">No news entries yet.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {news.map((item) => (
+                      <div key={item.id} className="flex flex-col sm:flex-row sm:items-center gap-4 bg-slate-900 p-4 rounded-lg border border-slate-700">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-white truncate">{item.news_title}</p>
+                          {item.headline && <p className="text-xs text-slate-400 mt-1 line-clamp-1">{item.headline}</p>}
+                          {item.picture_link && (
+                            <a href={item.picture_link} target="_blank" rel="noreferrer" className="text-xs text-blue-400 hover:underline mt-1 block truncate">
+                              {item.picture_link}
+                            </a>
+                          )}
+                          <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">
+                            <span>{new Date(item.created_at).toLocaleDateString()}</span>
+                            <span className={`px-2 py-0.5 rounded-full ${item.is_active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700 text-slate-400'}`}>
+                              {item.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <button
+                            onClick={() => setEditingNews(item)}
+                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs transition"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteNews(item.id)}
+                            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs transition"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {editingNews && (
+            <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+              <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-md border border-slate-700">
+                <h3 className="text-xl font-bold mb-4">Edit News</h3>
+                <form onSubmit={handleUpdateNews} className="space-y-4">
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-1">News Title *</label>
+                    <input
+                      type="text"
+                      value={editingNews.news_title}
+                      onChange={(e) => setEditingNews({ ...editingNews, news_title: e.target.value })}
+                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-amber-400"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-1">Picture Link</label>
+                    <input
+                      type="url"
+                      value={editingNews.picture_link || ''}
+                      onChange={(e) => setEditingNews({ ...editingNews, picture_link: e.target.value })}
+                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-1">Headline</label>
+                    <textarea
+                      value={editingNews.headline || ''}
+                      onChange={(e) => setEditingNews({ ...editingNews, headline: e.target.value })}
+                      rows={2}
+                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      id="edit-news-active"
+                      type="checkbox"
+                      checked={editingNews.is_active}
+                      onChange={(e) => setEditingNews({ ...editingNews, is_active: e.target.checked })}
+                      className="rounded border-slate-600 bg-slate-700 text-amber-400 focus:ring-amber-400"
+                    />
+                    <label htmlFor="edit-news-active" className="text-sm text-slate-300">Active</label>
+                  </div>
+                  <div className="flex gap-3">
                     <button
-                      type="button"
-                      onClick={() => setProductTab('brands')}
-                      className={`px-4 py-2 rounded-full transition ${productTab === 'brands' ? 'bg-amber-400 text-slate-900' : 'text-slate-300 hover:text-white'}`}
+                      type="submit"
+                      className="flex-1 bg-amber-400 text-slate-950 font-semibold py-2 rounded-lg hover:bg-amber-500 transition"
                     >
-                      Brand
+                      Save Changes
                     </button>
                     <button
                       type="button"
-                      onClick={() => setProductTab('listing')}
-                      className={`px-4 py-2 rounded-full transition ${productTab === 'listing' ? 'bg-amber-400 text-slate-900' : 'text-slate-300 hover:text-white'}`}
+                      onClick={() => setEditingNews(null)}
+                      className="flex-1 bg-slate-700 text-white font-semibold py-2 rounded-lg hover:bg-slate-600 transition"
                     >
-                      Listing
+                      Cancel
                     </button>
                   </div>
-                </div>
-                <p className="text-sm text-slate-400 mb-4">
-                  Adding a {productTab === 'brands' ? 'brand product' : 'available listing product'} entry.
-                </p>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Products Tab */}
+      {adminTab === 'products' && (
+        <div className="space-y-8">
+          {/* Add New Product */}
+          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+              <h2 className="text-2xl font-bold">Add New Product</h2>
+              <div className="inline-flex rounded-full bg-slate-900/80 p-1 border border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => setProductTab('brands')}
+                  className={`px-4 py-2 rounded-full transition ${productTab === 'brands' ? 'bg-amber-400 text-slate-900' : 'text-slate-300 hover:text-white'}`}
+                >
+                  Brand
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProductTab('listing')}
+                  className={`px-4 py-2 rounded-full transition ${productTab === 'listing' ? 'bg-amber-400 text-slate-900' : 'text-slate-300 hover:text-white'}`}
+                >
+                  Listing
+                </button>
+              </div>
+            </div>
+            <p className="text-sm text-slate-400 mb-4">
+              Adding a {productTab === 'brands' ? 'brand product' : 'available listing product'} entry.
+            </p>
                 <form onSubmit={handleAddProduct} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input
@@ -995,6 +1273,8 @@ export default function Page() {
           </a>
         </div>
       </nav>
+
+      <NewsTicker news={news} />
 
       {/* Hero Section */}
       <header className="relative bg-slate-900 text-white overflow-hidden py-20 lg:py-28 border-b border-slate-800">
