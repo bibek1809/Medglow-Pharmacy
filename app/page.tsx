@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 import NewsTicker from '@/components/NewsTicker'
+import AdminNewsTab from '@/components/AdminNewsTab'
 
 type Product = {
   id: string
