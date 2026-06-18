@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 
 export async function GET() {
-  const sessionClient = await createClient()
-  const { data, error } = await sessionClient
+  const supabase = createAdminClient()
+  const { data, error } = await supabase
     .from('news')
     .select('id, news_title, picture_link, headline, is_active, created_at')
     .eq('is_active', true)

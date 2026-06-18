@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 
 interface NewsItem {
@@ -20,24 +20,8 @@ interface NewsTickerProps {
 export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: NewsTickerProps) {
   const [news, setNews] = useState<NewsItem[]>(externalNews || [])
   const [loading, setLoading] = useState(!externalNews)
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isPaused, setIsPaused] = useState(false)
   const [showNotice, setShowNotice] = useState(true)
-  const noticeTimerRef = useRef<ReturnType<typeof setTimeout>>(null)
-
-  const fetchNews = useCallback(async () => {
-    try {
-      const res = await fetch('/api/news', { cache: 'no-store' })
-      if (res.ok) {
-        const json = await res.json()
-        setNews(json.news || [])
-      }
-    } catch {
-      // silent
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const noticeTimerRef: ReturnType<typeof setTimeout> | null = null
 
   useEffect(() => {
     if (externalNews && externalNews.length > 0) {
@@ -45,42 +29,57 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
       setLoading(false)
       return
     }
+    const controller = new AbortController()
+    const fetchNews = async () => {
+      try {
+        const res = await fetch('/api/news', { cache: 'no-store', signal: controller.signal })
+        if (res.ok) {
+          const json = await res.json()
+          setNews(json.news || [])
+        }
+      } catch {
+        // aborted or network error
+      } finally {
+        setLoading(false)
+      }
+    }
     fetchNews()
     const timer = setInterval(fetchNews, 60000)
-    return () => clearInterval(timer)
-  }, [externalNews, fetchNews])
-
-  useEffect(() => {
-    if (news.length <= 1 || isPaused) return
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % news.length)
-    }, intervalMs)
-    return () => clearInterval(timer)
-  }, [news.length, isPaused, intervalMs])
-
-  const dismissNotice = useCallback(() => {
-    setShowNotice(false)
-    if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current)
-  }, [])
-
-  useEffect(() => {
-    if (showNotice) {
-      noticeTimerRef.current = setTimeout(dismissNotice, 8000)
-    }
     return () => {
-      if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current)
+      controller.abort()
+      clearInterval(timer)
     }
-  }, [showNotice, dismissNotice])
+  }, [externalNews])
+
+  const dismissNotice = () => {
+    setShowNotice(false)
+  }
 
   if (loading || news.length === 0) return null
 
   const noticeNews = news.find((n) => n.picture_link) || news[0]
-  const headlineNews = news.filter((n) => n.headline)
-  const displayHeadline = headlineNews.length > 0 ? headlineNews[currentIndex % headlineNews.length] : news[currentIndex % news.length]
+  const headlineNews = news.filter((n) => n.headline && n.headline.trim())
+  const items = headlineNews.length > 0 ? headlineNews : news
+  const separator = ' ★ '
+  const tickerText = items.map((item) => item.headline?.trim() || item.news_title).join(separator)
 
   return (
     <div className="w-full bg-slate-900 text-white relative">
-      {/* Notice Popup */}
+      <style>{`
+        @keyframes continuousTicker {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .ticker-track {
+          display: flex;
+          width: max-content;
+          animation: continuousTicker ${Math.max(intervalMs, items.length * 8)}s linear infinite;
+        }
+        .ticker-track:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
+
       {showNotice && noticeNews?.picture_link && (
         <div className="relative w-full">
           <img
@@ -104,47 +103,22 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
         </div>
       )}
 
-      {/* Headline Ticker */}
       <div className="bg-slate-950 border-t border-slate-800 overflow-hidden h-10 sm:h-11 flex items-center">
-        <div className="flex-shrink-0 px-3 sm:px-4 bg-amber-400 text-slate-950 h-full flex items-center">
+        <div className="flex-shrink-0 px-3 sm:px-4 bg-amber-400 text-slate-950 h-full flex items-center z-10">
           <span className="text-xs sm:text-sm font-bold whitespace-nowrap">HEADLINES</span>
         </div>
 
-        <div
-          className="flex-1 flex items-center overflow-hidden px-2 cursor-pointer select-none"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-        >
-          {headlineNews.length > 0 ? (
-            <div className="overflow-hidden w-full">
-              <div
-                key={displayHeadline.id + '-' + currentIndex}
-                className="whitespace-nowrap text-xs sm:text-sm text-slate-100 font-medium animate-[tickerSlide_0.6s_ease-in-out]"
-                style={{ paddingLeft: '1rem' }}
-              >
-                {displayHeadline.headline} <span className="text-amber-400 mx-3">|</span> {displayHeadline.news_title}
-              </div>
-            </div>
-          ) : (
-            <div className="whitespace-nowrap text-xs sm:text-sm text-slate-300 px-2">
-              {news[0]?.news_title}
-            </div>
-          )}
+        <div className="flex-1 overflow-hidden">
+          <div className="ticker-track">
+            <span className="whitespace-nowrap text-xs sm:text-sm text-slate-100 font-medium px-2">
+              {tickerText}
+            </span>
+            <span className="whitespace-nowrap text-xs sm:text-sm text-slate-100 font-medium px-2" aria-hidden="true">
+              {tickerText}
+            </span>
+          </div>
         </div>
-
-        <button
-          onClick={() => setIsPaused((prev) => !prev)}
-          className="flex-shrink-0 px-3 border-l border-slate-800 h-full flex items-center justify-center text-slate-400 hover:text-white transition"
-          aria-label={isPaused ? 'Resume ticker' : 'Pause ticker'}
-        >
-          {isPaused ? (
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          ) : (
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-          )}
-        </button>
       </div>
     </div>
   )
 }
-
