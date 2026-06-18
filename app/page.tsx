@@ -633,8 +633,8 @@ export default function Page() {
                   <thead className="bg-slate-700">
                     <tr>
                       <th className="px-6 py-3 text-left">Name</th>
-                      <th className="px-6 py-3 text-left">Email</th>
-                      <th className="px-6 py-3 text-left">Inquiry Type</th>
+                       <th className="px-6 py-3 text-left">Phone</th>
+                       <th className="px-6 py-3 text-left">Inquiry Type</th>
                       <th className="px-6 py-3 text-left">Notes</th>
                       <th className="px-6 py-3 text-left">Status</th>
                       <th className="px-6 py-3 text-left">Date</th>
@@ -649,9 +649,7 @@ export default function Page() {
                         <>
                           <tr key={inquiry.id} className="border-t border-slate-700 hover:bg-slate-700/50">
                             <td className="px-6 py-3 align-top">{inquiry.name}</td>
-                            <td className="px-6 py-3 align-top text-blue-400">
-                              <a href={`mailto:${inquiry.email}`}>{inquiry.email}</a>
-                            </td>
+                              <td className="px-6 py-3 align-top">{inquiry.phone}</td>
                             <td className="px-6 py-3 align-top">{inquiry.product_interest}</td>
                             <td className="px-6 py-3 align-top max-w-xs text-sm text-slate-300 leading-relaxed">
                               <div className="space-y-2">
