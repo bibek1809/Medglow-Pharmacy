@@ -21,7 +21,6 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
   const [news, setNews] = useState<NewsItem[]>(externalNews || [])
   const [loading, setLoading] = useState(!externalNews)
   const [showNotice, setShowNotice] = useState(true)
-  const noticeTimerRef: ReturnType<typeof setTimeout> | null = null
 
   useEffect(() => {
     if (externalNews && externalNews.length > 0) {
@@ -57,11 +56,8 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
 
   if (loading || news.length === 0) return null
 
-  const noticeNews = news.find((n) => n.picture_link) || news[0]
-  const headlineNews = news.filter((n) => n.headline && n.headline.trim())
-  const items = headlineNews.length > 0 ? headlineNews : news
-  const separator = ' ★ '
-  const tickerText = items.map((item) => item.headline?.trim() || item.news_title).join(separator)
+  const noticeNews = news[0]
+  const tickerText = news.map((item) => item.news_title).join('    ★    ')
 
   return (
     <div className="w-full bg-slate-900 text-white relative">
@@ -73,7 +69,7 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
         .ticker-track {
           display: flex;
           width: max-content;
-          animation: continuousTicker ${Math.max(intervalMs, items.length * 8)}s linear infinite;
+          animation: continuousTicker ${Math.max(intervalMs, news.length * 10)}s linear infinite;
         }
         .ticker-track:hover {
           animation-play-state: paused;
@@ -81,25 +77,21 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
       `}</style>
 
       {showNotice && noticeNews?.picture_link && (
-        <div className="relative w-full">
-          <img
-            src={noticeNews.picture_link}
-            alt={noticeNews.news_title}
-            className="w-full h-20 sm:h-24 md:h-28 object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent flex items-center p-4">
-            <div className="max-w-3xl">
-              <p className="text-xs uppercase tracking-wider text-amber-400 font-semibold mb-0.5">Notice</p>
-              <h3 className="text-sm sm:text-base font-bold leading-tight line-clamp-2">{noticeNews.news_title}</h3>
-            </div>
+        <div className="flex justify-center items-center py-3 px-4">
+          <div className="relative inline-block max-w-xs mx-auto">
+            <img
+              src={noticeNews.picture_link}
+              alt={noticeNews.news_title}
+              className="max-h-32 w-auto object-contain rounded-lg shadow-lg"
+            />
+            <button
+              onClick={dismissNotice}
+              className="absolute -top-2 -right-2 bg-black/60 hover:bg-black/80 text-white p-1 rounded-full transition"
+              aria-label="Dismiss notice"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
-          <button
-            onClick={dismissNotice}
-            className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1 rounded-full transition"
-            aria-label="Dismiss notice"
-          >
-            <X className="w-4 h-4" />
-          </button>
         </div>
       )}
 
