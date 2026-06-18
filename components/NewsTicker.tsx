@@ -21,6 +21,7 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
   const [news, setNews] = useState<NewsItem[]>(externalNews || [])
   const [loading, setLoading] = useState(!externalNews)
   const [showNotice, setShowNotice] = useState(true)
+  const [imageBroken, setImageBroken] = useState(false)
 
   useEffect(() => {
     if (externalNews && externalNews.length > 0) {
@@ -60,24 +61,28 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
   if (loading || news.length === 0) return null
 
   const noticeNews = news[0]
+  const displayTitle = noticeNews.headline?.trim() || noticeNews.news_title
   const separator = '    ★    '
-  const allTitles = news.map((item) => item.news_title).join(separator)
+  const allTitles = news.map((item) => item.headline?.trim() || item.news_title).join(separator)
+
+  const shouldShowNotice = !!noticeNews.picture_link && !imageBroken
 
   return (
     <div className="w-full bg-slate-900 text-white relative">
-      {showNotice && noticeNews?.picture_link && (
+      {shouldShowNotice && showNotice && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none">
           <div className="pointer-events-auto relative bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden w-[min(94vw,480px)]">
             <div className="relative w-full" style={{ aspectRatio: '4/3' }}>
               <img
                 src={noticeNews.picture_link}
-                alt={noticeNews.news_title}
+                alt={displayTitle}
                 className="absolute inset-0 w-full h-full object-contain bg-slate-50 p-2"
+                onError={() => setImageBroken(true)}
               />
             </div>
             <div className="p-4 bg-white">
               <p className="text-slate-900 font-semibold text-sm sm:text-base leading-snug line-clamp-2">
-                {noticeNews.news_title}
+                {displayTitle}
               </p>
             </div>
             <button
