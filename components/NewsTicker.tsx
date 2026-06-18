@@ -148,22 +148,6 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
   )
 }
 
-
-export default function NewsTicker({ intervalMs = 5000 }: NewsTickerProps) {
-  const [news, setNews] = useState<NewsItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isPaused, setIsPaused] = useState(false)
-  const [showNotice, setShowNotice] = useState(true)
-  const noticeTimerRef = useRef<ReturnType<typeof setTimeout>> | null(null)
-
-  const fetchNews = useCallback(async () => {
-    try {
-      const res = await fetch('/api/news', { cache: 'no-store' })
-      if (res.ok) {
-        const json = await res.json()
-        setNews(json.news || [])
-      }
     } catch {
       // silent
     } finally {
