@@ -61,9 +61,9 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
   if (loading || news.length === 0) return null
 
   const noticeNews = news[0]
-  const displayTitle = noticeNews.headline?.trim() || noticeNews.news_title
   const separator = '    ★    '
-  const allTitles = news.map((item) => item.headline?.trim() || item.news_title).join(separator)
+  const tickerText = news.map((item) => item.headline?.trim() || item.news_title).join(separator)
+  const popupTitle = noticeNews.news_title
 
   const shouldShowNotice = !!noticeNews.picture_link && !imageBroken
 
@@ -75,14 +75,14 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
             <div className="relative w-full" style={{ aspectRatio: '4/3' }}>
               <img
                 src={noticeNews.picture_link}
-                alt={displayTitle}
+                alt={popupTitle}
                 className="absolute inset-0 w-full h-full object-contain bg-slate-50 p-2"
                 onError={() => setImageBroken(true)}
               />
             </div>
             <div className="p-4 bg-white">
               <p className="text-slate-900 font-semibold text-sm sm:text-base leading-snug line-clamp-2">
-                {displayTitle}
+                {popupTitle}
               </p>
             </div>
             <button
@@ -102,7 +102,7 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
         </div>
 
         <div className="flex-1 overflow-hidden relative">
-          <TickerScroll text={allTitles} speed={intervalMs} />
+          <TickerScroll text={tickerText} speed={intervalMs} />
         </div>
       </div>
     </div>
