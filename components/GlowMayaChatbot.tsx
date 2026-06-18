@@ -31,15 +31,7 @@ const INITIAL_MESSAGE: Message = {
   id: 'welcome',
   isBot: true,
   source: 'fallback',
-  text: `Hello! I'm GlowMaya, MedGlow Pharmacy's professional skincare and pharmacy assistant.
-
-I can help with:
-• Skincare routines and ingredient guidance
-• Prescription and medicine ordering
-• Delivery, payment, contact, and opening hours
-• Blood testing, baby care, vitamins, and pharmacy services
-
-${MEDGLOW_INFO.freeDelivery}. For exact stock or pricing, message us on WhatsApp: ${MEDGLOW_INFO.phone}.`
+  text: `Hello! I'm GlowMaya, MedGlow Pharmacy's professional skincare and pharmacy assistant.`
 }
 
 function getFallbackResponse(query: string): string {
