@@ -57,7 +57,8 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
   if (loading || news.length === 0) return null
 
   const noticeNews = news[0]
-  const tickerText = news.map((item) => item.news_title).join('    ★    ')
+  const separator = '    ★    '
+  const tickerText = news.map((item) => item.news_title).join(separator)
 
   return (
     <div className="w-full bg-slate-900 text-white relative">
@@ -69,7 +70,7 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
         .ticker-track {
           display: flex;
           width: max-content;
-          animation: continuousTicker ${Math.max(intervalMs, news.length * 10)}s linear infinite;
+          animation: continuousTicker ${Math.max(intervalMs, news.length * 12)}s linear infinite;
         }
         .ticker-track:hover {
           animation-play-state: paused;
@@ -77,19 +78,24 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
       `}</style>
 
       {showNotice && noticeNews?.picture_link && (
-        <div className="flex justify-center items-center py-3 px-4">
-          <div className="relative inline-block max-w-xs mx-auto">
+        <div className="fixed bottom-24 right-6 z-50">
+          <div className="relative bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden w-[min(92vw,360px)]">
             <img
               src={noticeNews.picture_link}
               alt={noticeNews.news_title}
-              className="max-h-32 w-auto object-contain rounded-lg shadow-lg"
+              className="w-full h-48 sm:h-56 object-cover object-center"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end p-4">
+              <p className="text-white font-semibold text-sm sm:text-base leading-snug line-clamp-2">
+                {noticeNews.news_title}
+              </p>
+            </div>
             <button
               onClick={dismissNotice}
-              className="absolute -top-2 -right-2 bg-black/60 hover:bg-black/80 text-white p-1 rounded-full transition"
+              className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition"
               aria-label="Dismiss notice"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
