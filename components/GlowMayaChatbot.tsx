@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import { X, Send, Leaf, MapPin, Truck, ShieldCheck, Stethoscope, Sparkles } from 'lucide-react'
+import { X, Send, Leaf, MapPin, Truck, ShieldCheck, Stethoscope, Sparkles, Minimize2, Maximize2 } from 'lucide-react'
 
 type Message = {
   id: string
@@ -156,7 +156,6 @@ export default function GlowMayaChatbot() {
   const quickQuestions = [
     { icon: MapPin, text: 'Location & Hours' },
     { icon: Truck, text: `Delivery Information` },
-
     { icon: Sparkles, text: 'Daily Skincare Routine' },
   ]
 
@@ -191,7 +190,7 @@ export default function GlowMayaChatbot() {
                 className="text-slate-950 hover:text-slate-700 transition p-1"
                 aria-label={isMinimized ? 'Maximize chat' : 'Minimize chat'}
               >
-                {isMinimized ? <Leaf className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
               </button>
               <button
                 onClick={() => setIsOpen(false)}
