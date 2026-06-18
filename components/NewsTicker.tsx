@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 
 interface NewsItem {
@@ -50,43 +50,29 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
     }
   }, [externalNews])
 
-  const dismissNotice = () => {
-    setShowNotice(false)
-  }
+  useEffect(() => {
+    if (showNotice && news.length > 0 && news[0]?.picture_link) {
+      const t = setTimeout(() => setShowNotice(false), 5000)
+      return () => clearTimeout(t)
+    }
+  }, [showNotice, news])
 
   if (loading || news.length === 0) return null
 
   const noticeNews = news[0]
   const separator = '    ★    '
-  const tickerText = news.map((item) => item.news_title).join(separator)
-  const animDuration = Math.max(intervalMs, news.length * 10)
+  const allTitles = news.map((item) => item.news_title).join(separator)
 
   return (
     <div className="w-full bg-slate-900 text-white relative">
-      <style>{`
-        @keyframes continuousTicker {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .ticker-track {
-          display: flex;
-          width: max-content;
-          animation: continuousTicker ${animDuration}s linear infinite;
-          will-change: transform;
-        }
-        .ticker-wrap:hover .ticker-track {
-          animation-play-state: paused;
-        }
-      `}</style>
-
       {showNotice && noticeNews?.picture_link && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none">
-          <div className="pointer-events-auto relative bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden w-[min(94vw,420px)]">
-            <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
+          <div className="pointer-events-auto relative bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden w-[min(94vw,480px)]">
+            <div className="relative w-full" style={{ aspectRatio: '4/3' }}>
               <img
                 src={noticeNews.picture_link}
                 alt={noticeNews.news_title}
-                className="absolute inset-0 w-full h-full object-contain bg-slate-50"
+                className="absolute inset-0 w-full h-full object-contain bg-slate-50 p-2"
               />
             </div>
             <div className="p-4 bg-white">
@@ -95,7 +81,7 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
               </p>
             </div>
             <button
-              onClick={dismissNotice}
+              onClick={() => setShowNotice(false)}
               className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition"
               aria-label="Dismiss notice"
             >
@@ -110,17 +96,41 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
           <span className="text-xs sm:text-sm font-bold whitespace-nowrap">NOTICES</span>
         </div>
 
-        <div className="ticker-wrap flex-1 overflow-hidden">
-          <div className="ticker-track">
-            <span className="whitespace-nowrap text-xs sm:text-sm text-slate-100 font-medium px-2">
-              {tickerText}
-            </span>
-            <span className="whitespace-nowrap text-xs sm:text-sm text-slate-100 font-medium px-2" aria-hidden="true">
-              {tickerText}
-            </span>
-          </div>
+        <div className="flex-1 overflow-hidden relative">
+          <TickerScroll text={allTitles} speed={intervalMs} />
         </div>
       </div>
+    </div>
+  )
+}
+
+function TickerScroll({ text, speed }: { text: string; speed: number }) {
+  const trackRef = useRef<HTMLDivElement>(null)
+  const rafRef = useRef<number>(0)
+  const posRef = useRef(0)
+
+  useEffect(() => {
+    const track = trackRef.current
+    if (!track) return
+
+    const half = track.scrollWidth / 2
+    const step = () => {
+      posRef.current -= 0.8
+      if (posRef.current <= -half) {
+        posRef.current = 0
+      }
+      track.style.transform = `translate3d(${posRef.current}px,0,0)`
+      rafRef.current = requestAnimationFrame(step)
+    }
+
+    rafRef.current = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(rafRef.current)
+  }, [text, speed])
+
+  return (
+    <div ref={trackRef} className="whitespace-nowrap text-xs sm:text-sm text-slate-100 font-medium px-2 will-change-transform inline-flex">
+      <span>{text}</span>
+      <span className="ml-8" aria-hidden="true">{text}</span>
     </div>
   )
 }

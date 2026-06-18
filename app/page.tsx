@@ -157,9 +157,10 @@ export default function Page() {
         setNews(result.news || [])
         return
       }
-      const { data, error } = await supabase.from('news').select('*').eq('is_active', true).order('created_at', { ascending: false })
-      if (error) throw error
-      setNews(data || [])
+      const res = await fetch('/api/news', { cache: 'no-store' })
+      if (!res.ok) throw new Error('Failed to fetch news')
+      const json = await res.json()
+      setNews(json.news || [])
     } catch (err: any) {
       console.error('Error fetching news:', err)
       setSubmitError(err.message || 'Error fetching news')
@@ -173,10 +174,13 @@ export default function Page() {
   }, [supabase])
 
   useEffect(() => {
-    if (supabase) {
-      fetchNews()
+    if (!supabase) return
+    if (showAdmin && isLoggedIn) {
+      if (adminTab === 'news') fetchNews()
+      return
     }
-  }, [supabase])
+    fetchNews()
+  }, [supabase, showAdmin, isLoggedIn, adminTab])
 
   const brandProducts = products.filter((product) => (product.type ?? 'brand') === 'brand')
   const listingProducts = products.filter((product) => product.type === 'listing')
