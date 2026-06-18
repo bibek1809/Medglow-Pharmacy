@@ -31,15 +31,7 @@ const INITIAL_MESSAGE: Message = {
   id: 'welcome',
   isBot: true,
   source: 'fallback',
-  text: `Hello! I'm GlowMaya, MedGlow Pharmacy's professional skincare and pharmacy assistant.
-
-I can help with:
-• Skincare routines and ingredient guidance
-• Prescription and medicine ordering
-• Delivery, payment, contact, and opening hours
-• Blood testing, baby care, vitamins, and pharmacy services
-
-${MEDGLOW_INFO.freeDelivery}. For exact stock or pricing, message us on WhatsApp: ${MEDGLOW_INFO.phone}.`
+  text: `Hello! I'm GlowMaya from MedGlow Pharmacy.\n\nOrders above NPR 20000 get free delivery. For exact stock or pricing, message us on WhatsApp: ${MEDGLOW_INFO.phone}.\n\nHow can I help you today?`
 }
 
 function getFallbackResponse(query: string): string {
@@ -61,8 +53,12 @@ function getFallbackResponse(query: string): string {
     return `💳 MedGlow accepts Cash, eSewa, Khalti, and bank transfer. For online orders, message us on WhatsApp and we'll confirm the best payment method.`
   }
 
-  if (lowerQuery.includes('service') || lowerQuery.includes('blood test') || lowerQuery.includes('prescription') || lowerQuery.includes('baby') || lowerQuery.includes('vitamin')) {
+  if (lowerQuery.includes('service') || lowerQuery.includes('blood test') || lowerQuery.includes('prescription') || lowerQuery.includes('baby') || lowerQuery.includes('vitamin') || lowerQuery.includes('pharmacy services')) {
     return `🏥 MedGlow offers prescription fulfillment, skincare consultation, on-site blood testing, baby care essentials, vitamins and supplements, first aid supplies, and elderly care products.\n\nVisit /pharmacy-services or message us on WhatsApp: ${MEDGLOW_INFO.phone}.`
+  }
+
+  if (lowerQuery.includes('contact page') || lowerQuery.includes('contact us') || lowerQuery.includes('/contact')) {
+    return `📞 Contact page: /contact\n\nYou can reach MedGlow Pharmacy by WhatsApp ${MEDGLOW_INFO.phone}, email ${MEDGLOW_INFO.email}, Instagram ${MEDGLOW_INFO.instagram}, or TikTok ${MEDGLOW_INFO.tiktok}.`
   }
 
   if (lowerQuery.includes('contact') || lowerQuery.includes('phone') || lowerQuery.includes('whatsapp') || lowerQuery.includes('instagram') || lowerQuery.includes('tiktok')) {
@@ -169,7 +165,8 @@ export default function GlowMayaChatbot() {
     { icon: Sparkles, text: 'Daily Skincare Routine' },
     { icon: Leaf, text: 'Oily Skin & Acne' },
     { icon: Leaf, text: 'Melasma & Dark Spots' },
-    { icon: Leaf, text: 'Pregnancy Skincare' },
+    { icon: MapPin, text: 'Pharmacy Services' },
+    { icon: MapPin, text: 'Contact Page' },
   ]
 
   return (

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, type FormEvent } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 type Product = {
@@ -972,17 +973,20 @@ export default function Page() {
             </div>
           </a>
           <div className="hidden md:flex space-x-8 font-medium text-sm text-slate-300">
-            <a href="#services" className="hover:text-amber-400 transition">
-              Our Services
+            <a href="/pharmacy-services" className="hover:text-amber-400 transition">
+              Pharmacy Services
             </a>
-            <a href="#brands" className="hover:text-amber-400 transition">
+            <a href="/#brands" className="hover:text-amber-400 transition">
               Skincare Brands
             </a>
-            <a href="#listing" className="hover:text-amber-400 transition">
+            <a href="/#listing" className="hover:text-amber-400 transition">
               Available Listing
             </a>
-            <a href="#order" className="hover:text-amber-400 transition">
+            <a href="/#order" className="hover:text-amber-400 transition">
               How To Order
+            </a>
+            <a href="/contact" className="hover:text-amber-400 transition">
+              Contact
             </a>
           </div>
           <a
@@ -1030,7 +1034,7 @@ export default function Page() {
                 Start a request
               </button>
               <a
-                href="#services"
+                href="/pharmacy-services"
                 className="w-full sm:w-auto bg-slate-800 border border-slate-700 text-center px-8 py-3.5 rounded-xl font-semibold hover:bg-slate-700 transition"
               >
                 Browse services
@@ -1501,7 +1505,17 @@ export default function Page() {
           </div>
 
           <div className="text-center md:text-right space-y-2">
-            <p className="text-white font-medium text-sm">Admin Access</p>
+            <p className="text-white font-medium text-sm">Quick Links</p>
+            <p className="font-light">
+              <Link href="/pharmacy-services" className="text-slate-400 hover:text-amber-400 transition">
+                Pharmacy Services
+              </Link>
+            </p>
+            <p className="font-light">
+              <Link href="/contact" className="text-slate-400 hover:text-amber-400 transition">
+                Contact
+              </Link>
+            </p>
             <p className="font-light">
               <a href="#admin" className="text-amber-400 hover:text-amber-500 transition font-medium">
                 Admin Portal

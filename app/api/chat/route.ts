@@ -18,12 +18,12 @@ MedGlow Pharmacy facts:
 - Website sections: Home, Our Services, Skincare Brands, Available Listing, How To Order, Pharmacy Services, Contact, Admin Portal
 
 Website navigation:
-- Our Services: /#services
+- Home: /
+- Our Services: /pharmacy-services
+- Contact: /contact
 - Skincare Brands: /#brands
 - Available Listing: /#listing
 - How To Order: /#order
-- Pharmacy Services: /pharmacy-services
-- Contact: /contact
 - Admin Portal: /#admin
 
 Behavior rules:
@@ -80,8 +80,32 @@ function getFallbackResponse(message: string): string {
     return `💳 MedGlow accepts Cash, eSewa, Khalti, and bank transfer. For online orders, message us on WhatsApp and we'll confirm the best payment method.`
   }
 
-  if (query.includes('service') || query.includes('blood test') || query.includes('prescription') || query.includes('baby') || query.includes('vitamin')) {
+  if (query.includes('service') || query.includes('blood test') || query.includes('prescription') || query.includes('baby') || query.includes('vitamin') || query.includes('pharmacy services')) {
     return `🏥 MedGlow offers prescription fulfillment, skincare consultation, on-site blood testing, baby care essentials, vitamins and supplements, first aid supplies, and elderly care products. Visit /pharmacy-services or message +977 9763259854.`
+  }
+
+  if (query.includes('contact page') || query.includes('contact us') || query.includes('/contact')) {
+    return `📞 Contact page: /contact. You can reach MedGlow Pharmacy by WhatsApp +977 9763259854, email pharmacymedglow@gmail.com, Instagram @medglow.pharmacy.skincare, or TikTok @medglowpharmacy.skincare.`
+  }
+
+  if (query.includes('brand') || query.includes('skincare brand')) {
+    return `Skincare Brands section: /#brands. MedGlow carries trusted skincare brands; message WhatsApp +977 9763259854 for exact stock and pricing.`
+  }
+
+  if (query.includes('listing') || query.includes('available product') || query.includes('available products')) {
+    return `Available Listing section: /#listing. Check products currently available for pickup or delivery. Exact stock may change, so message us on WhatsApp for confirmation.`
+  }
+
+  if (query.includes('order') || query.includes('how to order')) {
+    return `How To Order section: /#order. You can order through WhatsApp, Instagram, or TikTok. Orders above NPR 20000 get free delivery.`
+  }
+
+  if (query.includes('admin')) {
+    return `Admin Portal: /#admin. Use this only for MedGlow admin management.`
+  }
+
+  if (query.includes('home') || query.includes('main page')) {
+    return `Home page: /. It includes services, skincare brands, available listings, and order support.`
   }
 
   if (query.includes('contact') || query.includes('phone') || query.includes('whatsapp') || query.includes('instagram') || query.includes('tiktok')) {
