@@ -59,6 +59,7 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
   const noticeNews = news[0]
   const separator = '    ★    '
   const tickerText = news.map((item) => item.news_title).join(separator)
+  const animDuration = Math.max(intervalMs, news.length * 10)
 
   return (
     <div className="w-full bg-slate-900 text-white relative">
@@ -70,23 +71,26 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
         .ticker-track {
           display: flex;
           width: max-content;
-          animation: continuousTicker ${Math.max(intervalMs, news.length * 12)}s linear infinite;
+          animation: continuousTicker ${animDuration}s linear infinite;
+          will-change: transform;
         }
-        .ticker-track:hover {
+        .ticker-wrap:hover .ticker-track {
           animation-play-state: paused;
         }
       `}</style>
 
       {showNotice && noticeNews?.picture_link && (
-        <div className="fixed bottom-24 right-6 z-50">
-          <div className="relative bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden w-[min(92vw,360px)]">
-            <img
-              src={noticeNews.picture_link}
-              alt={noticeNews.news_title}
-              className="w-full h-48 sm:h-56 object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end p-4">
-              <p className="text-white font-semibold text-sm sm:text-base leading-snug line-clamp-2">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none">
+          <div className="pointer-events-auto relative bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden w-[min(94vw,420px)]">
+            <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
+              <img
+                src={noticeNews.picture_link}
+                alt={noticeNews.news_title}
+                className="absolute inset-0 w-full h-full object-contain bg-slate-50"
+              />
+            </div>
+            <div className="p-4 bg-white">
+              <p className="text-slate-900 font-semibold text-sm sm:text-base leading-snug line-clamp-2">
                 {noticeNews.news_title}
               </p>
             </div>
@@ -103,10 +107,10 @@ export default function NewsTicker({ news: externalNews, intervalMs = 5000 }: Ne
 
       <div className="bg-slate-950 border-t border-slate-800 overflow-hidden h-10 sm:h-11 flex items-center">
         <div className="flex-shrink-0 px-3 sm:px-4 bg-amber-400 text-slate-950 h-full flex items-center z-10">
-          <span className="text-xs sm:text-sm font-bold whitespace-nowrap">HEADLINES</span>
+          <span className="text-xs sm:text-sm font-bold whitespace-nowrap">NOTICES</span>
         </div>
 
-        <div className="flex-1 overflow-hidden">
+        <div className="ticker-wrap flex-1 overflow-hidden">
           <div className="ticker-track">
             <span className="whitespace-nowrap text-xs sm:text-sm text-slate-100 font-medium px-2">
               {tickerText}
