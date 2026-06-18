@@ -155,13 +155,9 @@ export default function GlowMayaChatbot() {
 
   const quickQuestions = [
     { icon: MapPin, text: 'Location & Hours' },
-    { icon: Truck, text: `Free delivery above NPR 20000` },
-    { icon: ShieldCheck, text: 'Payment Options' },
-    { icon: Stethoscope, text: 'Blood Testing' },
+    { icon: Truck, text: `Delivery Information` },
+
     { icon: Sparkles, text: 'Daily Skincare Routine' },
-    { icon: Leaf, text: 'Oily Skin & Acne' },
-    { icon: Leaf, text: 'Melasma & Dark Spots' },
-    { icon: Leaf, text: 'Pregnancy Skincare' },
   ]
 
   return (
