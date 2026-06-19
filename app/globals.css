@@ -167,3 +167,8 @@
     @apply font-sans;
   }
 }
+
+@keyframes tickerSlide {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(-10%); opacity: 1; }
+}

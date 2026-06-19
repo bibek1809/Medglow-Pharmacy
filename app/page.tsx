@@ -3,6 +3,9 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
+import NewsTicker from '@/components/NewsTicker'
+import AdminNewsTab from '@/components/AdminNewsTab'
+
 type Product = {
   id: string
   name: string
@@ -43,6 +46,9 @@ export default function Page() {
   const [supabase, setSupabase] = useState<any>(null)
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set())
   const [loadingImages, setLoadingImages] = useState<Set<string>>(new Set())
+  const [news, setNews] = useState<any[]>([])
+  const [editingNews, setEditingNews] = useState<any>(null)
+  const [newNews, setNewNews] = useState({ news_title: '', picture_link: '', headline: '', is_active: true })
 
   const handleImageError = (url: string) => {
     setFailedImages((prev) => new Set([...prev, url]))
@@ -89,6 +95,7 @@ export default function Page() {
       setIsLoggedIn(true)
       await fetchInquiries()
       await fetchProducts()
+      await fetchNews()
       return true
     } catch (err) {
       console.error('Unable to verify admin session:', err)
@@ -138,11 +145,42 @@ export default function Page() {
     }
   }
 
+  const fetchNews = async () => {
+    try {
+      if (!supabase) return
+      if (showAdmin && isLoggedIn) {
+        const response = await fetch('/api/admin/news', {
+          method: 'GET',
+          credentials: 'same-origin',
+        })
+        const result = await parseAdminResponse(response, 'Unable to load news')
+        setNews(result.news || [])
+        return
+      }
+      const res = await fetch('/api/news', { cache: 'no-store' })
+      if (!res.ok) throw new Error('Failed to fetch news')
+      const json = await res.json()
+      setNews(json.news || [])
+    } catch (err: any) {
+      console.error('Error fetching news:', err)
+      setSubmitError(err.message || 'Error fetching news')
+    }
+  }
+
   useEffect(() => {
     if (supabase) {
       fetchProducts()
     }
   }, [supabase])
+
+  useEffect(() => {
+    if (!supabase) return
+    if (showAdmin && isLoggedIn) {
+      if (adminTab === 'news') fetchNews()
+      return
+    }
+    fetchNews()
+  }, [supabase, showAdmin, isLoggedIn, adminTab])
 
   const brandProducts = products.filter((product) => (product.type ?? 'brand') === 'brand')
   const listingProducts = products.filter((product) => product.type === 'listing')
@@ -418,6 +456,76 @@ export default function Page() {
     }
   }
 
+  // News CRUD
+  const handleAddNews = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!newNews.news_title) {
+      setSubmitError('Please enter news title')
+      return
+    }
+    try {
+      const response = await fetch('/api/admin/news', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newNews),
+      })
+      await parseAdminResponse(response, 'Error adding news')
+      setSubmitStatus('News added successfully')
+      setNewNews({ news_title: '', picture_link: '', headline: '', is_active: true })
+      await fetchNews()
+      setTimeout(() => setSubmitStatus(''), 3000)
+    } catch (err: any) {
+      setSubmitError(err.message || 'Error adding news')
+    }
+  }
+
+  const handleUpdateNews = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!editingNews.news_title) {
+      setSubmitError('Please enter news title')
+      return
+    }
+    try {
+      const response = await fetch('/api/admin/news', {
+        method: 'PATCH',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingNews.id,
+          news_title: editingNews.news_title,
+          picture_link: editingNews.picture_link,
+          headline: editingNews.headline,
+          is_active: editingNews.is_active,
+        }),
+      })
+      await parseAdminResponse(response, 'Error updating news')
+      setEditingNews(null)
+      setSubmitStatus('News updated successfully')
+      await fetchNews()
+      setTimeout(() => setSubmitStatus(''), 3000)
+    } catch (err: any) {
+      setSubmitError(err.message || 'Error updating news')
+    }
+  }
+
+  const handleDeleteNews = async (id: string) => {
+    try {
+      const response = await fetch('/api/admin/news', {
+        method: 'DELETE',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      await parseAdminResponse(response, 'Error deleting news')
+      setSubmitStatus('News deleted successfully')
+      await fetchNews()
+      setTimeout(() => setSubmitStatus(''), 3000)
+    } catch (err: any) {
+      setSubmitError(err.message || 'Error deleting news')
+    }
+  }
+
   // Submit Inquiry Form
   const handleSubmitInquiry = async (e: FormEvent) => {
     e.preventDefault()
@@ -559,6 +667,15 @@ export default function Page() {
                 }`}
             >
               Products ({products.length})
+            </button>
+            <button
+              onClick={() => setAdminTab('news')}
+              className={`px-6 py-3 font-medium transition ${adminTab === 'news'
+                ? 'text-amber-400 border-b-2 border-amber-400'
+                : 'text-slate-400 hover:text-slate-200'
+                }`}
+            >
+              News ({news.length})
             </button>
           </div>
 
@@ -706,33 +823,47 @@ export default function Page() {
             </div>
           )}
 
+          {/* News Tab */}
+          {adminTab === 'news' && (
+            <AdminNewsTab
+              news={news}
+              newNews={newNews}
+              editingNews={editingNews}
+              onNewNewsChange={setNewNews}
+              onSetEditingNews={setEditingNews}
+              onAdd={handleAddNews}
+              onUpdate={handleUpdateNews}
+              onDelete={handleDeleteNews}
+            />
+          )}
+
           {/* Products Tab */}
           {adminTab === 'products' && (
             <div className="space-y-8">
-              {/* Add New Product */}
-              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                  <h2 className="text-2xl font-bold">Add New Product</h2>
-                  <div className="inline-flex rounded-full bg-slate-900/80 p-1 border border-slate-700">
-                    <button
-                      type="button"
-                      onClick={() => setProductTab('brands')}
-                      className={`px-4 py-2 rounded-full transition ${productTab === 'brands' ? 'bg-amber-400 text-slate-900' : 'text-slate-300 hover:text-white'}`}
-                    >
-                      Brand
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setProductTab('listing')}
-                      className={`px-4 py-2 rounded-full transition ${productTab === 'listing' ? 'bg-amber-400 text-slate-900' : 'text-slate-300 hover:text-white'}`}
-                    >
-                      Listing
-                    </button>
-                  </div>
-                </div>
-                <p className="text-sm text-slate-400 mb-4">
-                  Adding a {productTab === 'brands' ? 'brand product' : 'available listing product'} entry.
-                </p>
+          {/* Add New Product */}
+          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+              <h2 className="text-2xl font-bold">Add New Product</h2>
+              <div className="inline-flex rounded-full bg-slate-900/80 p-1 border border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => setProductTab('brands')}
+                  className={`px-4 py-2 rounded-full transition ${productTab === 'brands' ? 'bg-amber-400 text-slate-900' : 'text-slate-300 hover:text-white'}`}
+                >
+                  Brand
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProductTab('listing')}
+                  className={`px-4 py-2 rounded-full transition ${productTab === 'listing' ? 'bg-amber-400 text-slate-900' : 'text-slate-300 hover:text-white'}`}
+                >
+                  Listing
+                </button>
+              </div>
+            </div>
+            <p className="text-sm text-slate-400 mb-4">
+              Adding a {productTab === 'brands' ? 'brand product' : 'available listing product'} entry.
+            </p>
                 <form onSubmit={handleAddProduct} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input
@@ -995,6 +1126,8 @@ export default function Page() {
           </a>
         </div>
       </nav>
+
+      <NewsTicker news={news} />
 
       {/* Hero Section */}
       <header className="relative bg-slate-900 text-white overflow-hidden py-20 lg:py-28 border-b border-slate-800">
