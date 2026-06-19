@@ -182,8 +182,8 @@ export default function Page() {
     fetchNews()
   }, [supabase, showAdmin, isLoggedIn, adminTab])
 
-  const brandProducts = products.filter((product) => (product.type ?? 'brand') === 'brand')
-  const listingProducts = products.filter((product) => product.type === 'listing')
+  const brandProducts = brand_listing.filter((product) => (product.type ?? 'brand') === 'brand')
+  const listingProducts = brand_listing.filter((product) => product.type === 'listing')
 
   useEffect(() => {
     if (carouselIndex >= brandProducts.length) {
