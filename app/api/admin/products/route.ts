@@ -75,12 +75,12 @@ export async function GET() {
   }
 
   const adminClient = createAdminClient()
-  const { data, error: queryError } = await adminClient.from('products').select('*').order('created_at')
+  const { data, error: queryError } = await adminClient.from('brand_listing').select('*').order('created_at')
   if (queryError) {
     return Response.json({ error: queryError.message }, { status: 500 })
   }
 
-  return Response.json({ products: data })
+  return Response.json({ brand_listing: data })
 }
 
 export async function POST(req: Request) {
@@ -100,7 +100,7 @@ export async function POST(req: Request) {
   const safeType = isValidType(type) ? (type as 'brand' | 'listing') : 'brand'
 
   const adminClient = createAdminClient()
-  const { error: insertError } = await adminClient.from('products').insert([
+  const { error: insertError } = await adminClient.from('brand_listing').insert([
     { name: (name as string).trim(), logo_url: (logo_url as string).trim(), type: safeType },
   ])
 
@@ -129,7 +129,7 @@ export async function PATCH(req: Request) {
   if (isValidType(type)) updatePayload.type = type
 
   const { error: updateError } = await adminClient
-    .from('products')
+    .from('brand_listing')
     .update(updatePayload)
     .eq('id', id)
 
@@ -155,7 +155,7 @@ export async function DELETE(req: Request) {
   }
 
   const adminClient = createAdminClient()
-  const { error: deleteError } = await adminClient.from('products').delete().eq('id', id)
+  const { error: deleteError } = await adminClient.from('brand_listing').delete().eq('id', id)
 
   if (deleteError) {
     return Response.json({ error: deleteError.message }, { status: 500 })

@@ -136,7 +136,7 @@ export default function Page() {
         return
       }
 
-      const { data, error } = await supabase.from('products').select('*').order('created_at')
+      const { data, error } = await supabase.from('brand_listing').select('*').order('created_at')
       if (error) throw error
       setProducts(data || [])
     } catch (err: any) {
