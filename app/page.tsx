@@ -903,7 +903,7 @@ export default function Page() {
                     </tr>
                   </thead>
                   <tbody>
-                    {products
+                    {brand_listing
                       .filter((product) => (product.type ?? 'brand') === (productTab === 'brands' ? 'brand' : 'listing'))
                       .map((product) => (
                         <tr key={product.id} className="border-t border-slate-700 hover:bg-slate-700/50">
