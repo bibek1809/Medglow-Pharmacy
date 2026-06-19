@@ -145,15 +145,6 @@ export default function Page() {
     }
   }
 
-      const { data, error } = await supabase.from('brand_listing').select('*').order('created_at')
-      if (error) throw error
-      setProducts(data || [])
-    } catch (err: any) {
-      console.error('Error fetching products:', err)
-      setSubmitError(err.message || 'Error fetching products')
-    }
-  }
-
   const fetchNews = async () => {
     try {
       if (!supabase) return
