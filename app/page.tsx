@@ -279,12 +279,14 @@ export default function Page() {
   // Fetch Inquiries for Admin
   const fetchInquiries = async () => {
     try {
-      const response = await fetch('/api/admin/inquiries', {
-        method: 'GET',
-        credentials: 'same-origin',
-      })
-      const result = await parseAdminResponse(response, 'Unable to load inquiries')
-      setInquiries(result.inquiries || [])
+      if (!supabase) return
+      const { data, error } = await supabase
+        .from('inquiries')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setInquiries(data || [])
     } catch (err: any) {
       console.error('Error fetching inquiries:', err)
       setSubmitError(err.message || 'Error fetching inquiries')
