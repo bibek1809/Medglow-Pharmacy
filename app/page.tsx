@@ -22,7 +22,7 @@ export default function Page() {
   const [adminPassword, setAdminPassword] = useState('')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [inquiries, setInquiries] = useState<any[]>([])
-  const [brand_listing, setBrand_listing] = useState<Product[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [carouselIndex, setCarouselIndex] = useState(0)
   const [listingIndex, setListingIndex] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -94,7 +94,7 @@ export default function Page() {
 
       setIsLoggedIn(true)
       await fetchInquiries()
-      await fetchBrand_listing()
+      await fetchProducts()
       await fetchNews()
       return true
     } catch (err) {
@@ -123,7 +123,7 @@ export default function Page() {
   }
 
   // Fetch Products
-  const fetchBrand_listing = async () => {
+  const fetchProducts = async () => {
     try {
       if (!supabase) return
       if (showAdmin && isLoggedIn) {
@@ -131,17 +131,17 @@ export default function Page() {
           method: 'GET',
           credentials: 'same-origin',
         })
-        const result = await parseAdminResponse(response, 'Unable to load brand listing')
-        setBrand_listing(result.brand_listing || [])
+        const result = await parseAdminResponse(response, 'Unable to load products')
+        setProducts(result.products || [])
         return
       }
 
       const { data, error } = await supabase.from('brand_listing').select('*').order('created_at')
       if (error) throw error
-      setBrand_listing(data || [])
+      setProducts(data || [])
     } catch (err: any) {
-      console.error('Error fetching brand listing:', err)
-      setSubmitError(err.message || 'Error fetching brand listing')
+      console.error('Error fetching products:', err)
+      setSubmitError(err.message || 'Error fetching products')
     }
   }
 
@@ -169,7 +169,7 @@ export default function Page() {
 
   useEffect(() => {
     if (supabase) {
-      fetchBrand_listing()
+      fetchProducts()
     }
   }, [supabase])
 
@@ -182,8 +182,8 @@ export default function Page() {
     fetchNews()
   }, [supabase, showAdmin, isLoggedIn, adminTab])
 
-  const brandProducts = brand_listing.filter((product) => (product.type ?? 'brand') === 'brand')
-  const listingProducts = brand_listing.filter((product) => product.type === 'listing')
+  const brandProducts = products.filter((product) => (product.type ?? 'brand') === 'brand')
+  const listingProducts = products.filter((product) => product.type === 'listing')
 
   useEffect(() => {
     if (carouselIndex >= brandProducts.length) {
@@ -397,7 +397,7 @@ export default function Page() {
 
       setNewProduct({ name: '', logo_url: '' })
       setSubmitStatus('Product added successfully')
-      await fetchBrand_listing()
+      await fetchProducts()
       setTimeout(() => setSubmitStatus(''), 3000)
     } catch (err: any) {
       setSubmitError(err.message || 'Error adding product')
@@ -429,7 +429,7 @@ export default function Page() {
       await parseAdminResponse(response, 'Error updating product')
       setEditingProduct(null)
       setSubmitStatus('Product updated successfully')
-      await fetchBrand_listing()
+      await fetchProducts()
       setTimeout(() => setSubmitStatus(''), 3000)
     } catch (err: any) {
       setSubmitError(err.message || 'Error updating product')
@@ -449,7 +449,7 @@ export default function Page() {
       })
       await parseAdminResponse(response, 'Error deleting product')
       setSubmitStatus('Product deleted successfully')
-      await fetchBrand_listing()
+      await fetchProducts()
       setTimeout(() => setSubmitStatus(''), 3000)
     } catch (err: any) {
       setSubmitError(err.message || 'Error deleting product')
@@ -660,13 +660,13 @@ export default function Page() {
               Inquiries ({inquiries.length})
             </button>
             <button
-              onClick={() => setAdminTab('brand_listing')}
-              className={`px-6 py-3 font-medium transition ${              adminTab === 'brand_listing'
+              onClick={() => setAdminTab('products')}
+              className={`px-6 py-3 font-medium transition ${adminTab === 'products'
                 ? 'text-amber-400 border-b-2 border-amber-400'
                 : 'text-slate-400 hover:text-slate-200'
                 }`}
             >
-              Brand Listing ({brand_listing.length})
+              Products ({products.length})
             </button>
             <button
               onClick={() => setAdminTab('news')}
@@ -838,7 +838,7 @@ export default function Page() {
           )}
 
           {/* Products Tab */}
-          {              adminTab === 'brand_listing' && (
+          {adminTab === 'products' && (
             <div className="space-y-8">
           {/* Add New Product */}
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
@@ -868,7 +868,7 @@ export default function Page() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input
                       type="text"
-                      placeholder="Brand Name"
+                      placeholder="Product Name"
                       value={newProduct.name}
                       onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
                       className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
@@ -885,17 +885,17 @@ export default function Page() {
                     type="submit"
                     className="bg-emerald-600 hover:bg-emerald-700 px-6 py-2 rounded-lg font-medium transition"
                   >
-                    Add {productTab === 'brands' ? 'Brand' : 'Listing'}
+                    Add {productTab === 'brands' ? 'Brand' : 'Listing'} Product
                   </button>
                 </form>
               </div>
 
-               {/* Brand Listing */}
+              {/* Products List */}
               <div className="bg-slate-800 rounded-lg overflow-hidden">
                 <table className="w-full">
                   <thead className="bg-slate-700">
                     <tr>
-                      <th className="px-6 py-3 text-left">Brand Name</th>
+                      <th className="px-6 py-3 text-left">Product Name</th>
                       <th className="px-6 py-3 text-left">Image Preview</th>
                       <th className="px-6 py-3 text-left">Image URL</th>
                       <th className="px-6 py-3 text-left">Category</th>
@@ -903,7 +903,7 @@ export default function Page() {
                     </tr>
                   </thead>
                   <tbody>
-                    {brand_listing
+                    {products
                       .filter((product) => (product.type ?? 'brand') === (productTab === 'brands' ? 'brand' : 'listing'))
                       .map((product) => (
                         <tr key={product.id} className="border-t border-slate-700 hover:bg-slate-700/50">
@@ -958,7 +958,7 @@ export default function Page() {
                     <form onSubmit={handleUpdateProduct} className="space-y-4">
                       <input
                         type="text"
-                        placeholder="Brand Name"
+                        placeholder="Product Name"
                         value={editingProduct.name}
                         onChange={(e) =>
                           setEditingProduct({ ...editingProduct, name: e.target.value })
