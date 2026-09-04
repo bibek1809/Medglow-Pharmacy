@@ -16,12 +16,7 @@ function getClientIp(request: NextRequest) {
   if (forwarded) {
     return forwarded.split(',')[0].trim()
   }
-  return (
-    request.ip ||
-    request.headers.get('x-real-ip') ||
-    request.headers.get('cf-connecting-ip') ||
-    'unknown'
-  )
+  return request.headers.get('x-real-ip') || request.headers.get('cf-connecting-ip') || 'unknown'
 }
 
 function getRateLimitRule(pathname: string) {

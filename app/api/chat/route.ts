@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { generateText } from 'ai'
 import { adToBs, bsToAd, currentBsDate } from '@/lib/nepali-date'
 
 const MEDGLOW_CONTEXT = `You are GlowMaya, the professional AI assistant for MedGlow Pharmacy in Dadhikot, Nepal.
@@ -98,11 +99,44 @@ function getFallbackResponse(message: string): string {
     return `📞 Contact MedGlow Pharmacy: WhatsApp +977 9763259854, email pharmacymedglow@gmail.com, Instagram @medglow.pharmacy.skincare, TikTok @medglowpharmacy.skincare.`
   }
 
-  if (query.includes('routine') || query.includes('skincare')) {
-    return `🌿 Basic skincare routine: gentle cleanser, hydrating toner, treatment serum based on your concern, moisturizer, and SPF 30+ in the morning. For a personalized routine, tell me your skin type and main concern.`
+  if (query.includes('eye') || query.includes('dull') || query.includes('dark circle') || query.includes('tired eyes')) {
+    return `For dull-looking eyes, start with 7–9 hours of sleep, regular hydration, sunglasses in daylight, and a gentle fragrance-free eye-area moisturizer. In the morning, use sunscreen around (not inside) the eye area. Avoid rubbing your eyes. Persistent swelling, pain, vision changes, sudden one-sided symptoms, or severe redness needs prompt medical care. Tell me whether you mean dark circles, puffiness, dryness, or tiredness for more targeted guidance.`
+  }
+
+  if (query.includes('oily skin') || query.includes('oily')) {
+    return `For oily skin: morning—gentle foaming cleanser, lightweight non-comedogenic moisturizer, and SPF 30+; evening—cleanser and a light moisturizer. Salicylic acid can help congestion when introduced 2–3 nights weekly. Avoid scrubbing, alcohol-heavy toners, and skipping moisturizer. Patch-test one new product at a time.`
+  }
+
+  if (query.includes('dry skin') || query.includes('dryness') || query.includes('flaky')) {
+    return `For dry skin: use a creamy fragrance-free cleanser, apply a ceramide or glycerin moisturizer to slightly damp skin, and use SPF 30+ each morning. At night, a thin layer of petrolatum over dry spots can reduce water loss. Avoid hot water, harsh scrubs, and introducing several actives together.`
+  }
+
+  if (query.includes('combination skin') || query.includes('combination')) {
+    return `For combination skin, use a gentle cleanser and lightweight moisturizer across the face, then apply a little extra moisturizer to dry areas and a thin layer of oil-control product only on the T-zone. Use SPF 30+ daily and introduce actives slowly.`
+  }
+
+  if (query.includes('acne') || query.includes('pimple') || query.includes('breakout')) {
+    return `For occasional breakouts: cleanse gently, avoid picking, choose non-comedogenic products, and consider salicylic acid or low-strength benzoyl peroxide one product at a time. Stop if burning or swelling occurs. Painful cysts, scarring, widespread rash, or acne that persists should be assessed by a pharmacist or dermatologist.`
+  }
+
+  if (query.includes('routine') || query.includes('skincare') || query.includes('skin care')) {
+    return `A simple routine is enough: gentle cleanser, moisturizer suited to your skin type, and broad-spectrum SPF 30+ every morning; cleanse and moisturize at night. Add only one treatment at a time, patch-test first, and stop if you develop swelling, hives, blistering, or severe burning. Tell me your skin type and main concern.`
   }
 
   return FALLBACK_REPLY
+}
+
+async function getGatewayResponse(message: string, history: ChatMessage[]): Promise<string | null> {
+  try {
+    const result = await generateText({
+      model: 'google/gemini-2.5-flash',
+      system: MEDGLOW_CONTEXT,
+      messages: [...history.map((item) => ({ role: item.role, content: item.content })), { role: 'user', content: message }],
+      maxOutputTokens: 650,
+      temperature: 0.35,
+    })
+    return result.text?.trim() || null
+  } catch { return null }
 }
 
 async function getGeminiResponse(message: string, history: ChatMessage[]): Promise<string | null> {
@@ -217,6 +251,11 @@ export async function POST(req: NextRequest) {
 
     if (!message) {
       return Response.json({ error: 'No message provided' }, { status: 400 })
+    }
+
+    const gatewayReply = await getGatewayResponse(message, history)
+    if (gatewayReply) {
+      return Response.json({ reply: gatewayReply, source: 'ai-gateway' })
     }
 
     const geminiReply = await getGeminiResponse(message, history)
