@@ -336,13 +336,13 @@ export default function Page() {
     return acc
   }, {} as Record<string, number>)
 
-  const topInquiryTypes = Object.entries(
-    inquiries.reduce((acc, item) => {
+  const topInquiryTypes = (Object.entries(
+    inquiries.reduce<Record<string, number>>((acc, item) => {
       const type = item.product_interest || 'General Inquiry'
       acc[type] = (acc[type] || 0) + 1
       return acc
-    }, {} as Record<string, number>)
-  )
+    }, {})
+  ) as [string, number][])
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
 
