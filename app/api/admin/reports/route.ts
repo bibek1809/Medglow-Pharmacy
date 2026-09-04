@@ -1,4 +1,5 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { adToBs, parseReportDate } from '@/lib/nepali-date'
 
 const ADMIN_EMAIL = process.env.SUPABASE_ADMIN_EMAIL ?? 'pharmacymedglow@gmail.com'
 
@@ -13,8 +14,8 @@ async function requireAdmin() {
 const numericFields = ['total_sales','total_customers','offline_customers','offline_sales','tiktok_customers','tiktok_sales','instagram_customers','instagram_sales','whatsapp_customers','whatsapp_sales','expenses'] as const
 
 function clean(body: Record<string, unknown>) {
-  const report_date = typeof body.report_date === 'string' ? body.report_date : ''
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(report_date)) throw new Error('A valid report date is required')
+  const inputDate = typeof body.reportDate === 'string' ? body.reportDate : body.report_date
+  const report_date = parseReportDate(inputDate, body.dateSystem)
   const values: Record<string, unknown> = { report_date, notes: typeof body.notes === 'string' ? body.notes.trim().slice(0, 2000) : null }
   for (const key of numericFields) {
     const value = Number(body[key] ?? 0)
@@ -28,7 +29,8 @@ export async function GET() {
   if (!await requireAdmin()) return Response.json({ error: 'Admin access required' }, { status: 403 })
   const { data, error } = await createAdminClient().from('admin_reports').select('*').order('report_date', { ascending: false })
   if (error) return Response.json({ error: error.message }, { status: 500 })
-  return Response.json({ reports: data ?? [] })
+  const reports = (data ?? []).map((report) => ({ ...report, bs_date: adToBs(report.report_date) }))
+  return Response.json({ reports })
 }
 
 export async function POST(req: Request) {
