@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 
 import NewsTicker from '@/components/NewsTicker'
 import AdminNewsTab from '@/components/AdminNewsTab'
+import AdminReportsTab from '@/components/AdminReportsTab'
 
 type Product = {
   id: string
@@ -49,6 +50,7 @@ export default function Page() {
   const [news, setNews] = useState<any[]>([])
   const [editingNews, setEditingNews] = useState<any>(null)
   const [newNews, setNewNews] = useState({ news_title: '', picture_link: '', headline: '', is_active: true })
+  const [reports, setReports] = useState<any[]>([])
 
   const handleImageError = (url: string) => {
     setFailedImages((prev) => new Set([...prev, url]))
@@ -96,6 +98,7 @@ export default function Page() {
       await fetchInquiries()
       await fetchBrand_listing()
       await fetchNews()
+      await fetchReports()
       return true
     } catch (err) {
       console.error('Unable to verify admin session:', err)
@@ -167,10 +170,16 @@ export default function Page() {
     }
   }
 
+  const fetchReports = async () => {
+    try {
+      const response = await fetch('/api/admin/reports', { credentials: 'same-origin' })
+      const result = await parseAdminResponse(response, 'Unable to load reports')
+      setReports(result.reports || [])
+    } catch (err: any) { setSubmitError(err.message || 'Unable to load reports') }
+  }
+
   useEffect(() => {
-    if (supabase) {
-      fetchBrand_listing()
-    }
+    if (supabase) fetchBrand_listing()
   }, [supabase])
 
   useEffect(() => {
@@ -671,6 +680,12 @@ export default function Page() {
               Brand Listing ({brand_listing.length})
             </button>
             <button
+              onClick={() => setAdminTab('reports')}
+              className={`px-6 py-3 font-medium transition ${adminTab === 'reports' ? 'text-amber-400 border-b-2 border-amber-400' : 'text-slate-400 hover:text-slate-200'}`}
+            >
+              Reports ({reports.length})
+            </button>
+            <button
               onClick={() => setAdminTab('news')}
               className={`px-6 py-3 font-medium transition ${adminTab === 'news'
                 ? 'text-amber-400 border-b-2 border-amber-400'
@@ -823,6 +838,10 @@ export default function Page() {
                 </table>
               </div>
             </div>
+          )}
+
+          {adminTab === 'reports' && (
+            <AdminReportsTab reports={reports} onRefresh={fetchReports} onError={setSubmitError} onSuccess={setSubmitStatus} />
           )}
 
           {/* News Tab */}
