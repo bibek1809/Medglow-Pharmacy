@@ -7,12 +7,16 @@ import { cookies } from 'next/headers'
  * global variable. Always create a new client within each function when using
  * it.
  */
+const supabaseUrl = process.env.SUPABASE_URL_2 ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY_2 ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.SUPABASE_ANON_KEY
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY_2 ?? process.env.SUPABASE_SERVICE_ROLE_KEY
+
 export async function createClient() {
   const cookieStore = await cookies()
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl!,
+    supabaseAnonKey!,
     {
       cookies: {
         getAll() {
@@ -40,8 +44,8 @@ export async function createClient() {
  */
 export function createAdminClient() {
   return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    supabaseUrl!,
+    supabaseServiceRoleKey!,
     {
       auth: {
         autoRefreshToken: false,

@@ -37,7 +37,7 @@ let bootstrapPromise: Promise<void> | undefined
 
 function getPool() {
   if (pool) return pool
-  const connectionString = process.env.POSTGRES_URL_NON_POOLING ?? process.env.POSTGRES_URL
+  const connectionString = process.env.POSTGRES_URL_NON_POOLING_2 ?? process.env.POSTGRES_URL_2 ?? process.env.POSTGRES_URL_NON_POOLING ?? process.env.POSTGRES_URL
   if (!connectionString) throw new Error('Report database connection is not configured')
   pool = new Pool({ connectionString, max: 1, idleTimeoutMillis: 10_000, connectionTimeoutMillis: 5_000, ssl: { rejectUnauthorized: false } })
   return pool
