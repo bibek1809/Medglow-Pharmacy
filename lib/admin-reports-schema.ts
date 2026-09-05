@@ -1,6 +1,24 @@
 import { Pool } from 'pg'
 
 const createTableSql = `
+-- The runtime DB role may not have permission to inspect auth.users. Remove any
+-- legacy FK on this operational ledger before creating/using the table.
+DO $$
+DECLARE constraint_name text;
+BEGIN
+  FOR constraint_name IN
+    SELECT con.conname
+    FROM pg_constraint con
+    JOIN pg_class rel ON rel.oid = con.conrelid
+    JOIN pg_namespace ns ON ns.oid = rel.relnamespace
+    WHERE ns.nspname = 'public'
+      AND rel.relname = 'admin_reports'
+      AND con.contype = 'f'
+      AND pg_get_constraintdef(con.oid) ILIKE '%auth.users%'
+  LOOP
+    EXECUTE format('ALTER TABLE public.admin_reports DROP CONSTRAINT IF EXISTS %I', constraint_name);
+  END LOOP;
+END $$;
 create table if not exists public.admin_reports (
   id uuid primary key default gen_random_uuid(),
   report_date date not null unique,
@@ -17,7 +35,9 @@ create table if not exists public.admin_reports (
   expenses numeric(12,2) not null default 0 check (expenses >= 0),
   online_percentage numeric(6,2) generated always as (case when total_sales > 0 then greatest(0, least(100, ((tiktok_sales + instagram_sales + whatsapp_sales) / total_sales) * 100)) else 0 end) stored,
   offline_percentage numeric(6,2) generated always as (case when total_sales > 0 then greatest(0, least(100, (offline_sales / total_sales) * 100)) else 0 end) stored,
-  created_by uuid not null references auth.users(id) on delete restrict,
+  -- Keep this as a plain UUID so the runtime bootstrap does not need access to auth.users.
+  -- The API already verifies the authenticated admin before writing.
+  created_by uuid not null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   notes text
