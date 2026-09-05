@@ -55,8 +55,14 @@ async function bootstrapWithAvailableConnection() {
 
   let lastError: unknown
   for (const connectionString of strings) {
+    // Supabase connection URLs commonly include sslmode=require. The pg
+    // parser turns that into certificate verification and can reject the
+    // platform certificate before our explicit SSL options are applied.
+    // Remove only that URL option and keep TLS enabled with platform-safe
+    // certificate handling.
+    const normalizedConnectionString = connectionString.replace(/([?&])sslmode=[^&]*&?/i, '$1').replace(/[?&]$/, '')
     const candidate = new Pool({
-      connectionString,
+      connectionString: normalizedConnectionString,
       max: 1,
       idleTimeoutMillis: 10_000,
       connectionTimeoutMillis: 5_000,

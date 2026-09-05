@@ -43,16 +43,28 @@ export async function GET() {
 export async function POST(req: Request) {
   const user = await requireAdmin()
   if (!user) return Response.json({ error: 'Admin access required' }, { status: 403 })
+  let values: Record<string, unknown>
+  try {
+    values = clean(await req.json())
+  } catch (error) {
+    return Response.json({ error: error instanceof Error ? error.message : 'Invalid report data' }, { status: 400 })
+  }
+
   try {
     await ensureAdminReportsTable()
-    const values = clean(await req.json())
-    const { data, error } = await createAdminClient().from('admin_reports').upsert({ ...values, created_by: user.id, updated_at: new Date().toISOString() }, { onConflict: 'report_date' }).select().single()
-    if (error) return Response.json({ error: error.message }, { status: 500 })
-    return Response.json({ report: data })
   } catch (error) {
-    console.error('[v0] Failed to bootstrap or save admin report', error)
-    return Response.json({ error: error instanceof Error && error.message.includes('Invalid ') ? error.message : 'Could not save report. The database may be unavailable.' }, { status: error instanceof Error && error.message.includes('Invalid ') ? 400 : 503 })
+    console.error('[v0] Report schema bootstrap failed before save', error)
+    const detail = error instanceof Error ? error.message : 'Unknown database bootstrap error'
+    const safeDetail = detail.replace(/postgres(?:ql)?:\/\/[^\s]+/gi, 'postgres://[redacted]')
+    return Response.json({ error: `Report database setup failed: ${safeDetail}` }, { status: 503 })
   }
+
+  const { data, error } = await createAdminClient().from('admin_reports').upsert({ ...values, created_by: user.id, updated_at: new Date().toISOString() }, { onConflict: 'report_date' }).select().single()
+  if (error) {
+    console.error('[v0] Report upsert failed after schema bootstrap', error)
+    return Response.json({ error: `Report save failed: ${error.message}` }, { status: 500 })
+  }
+  return Response.json({ report: data })
 }
 
 export async function DELETE(req: Request) {
