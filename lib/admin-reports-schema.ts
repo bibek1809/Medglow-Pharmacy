@@ -33,12 +33,15 @@ notify pgrst, 'reload schema';
 `
 
 const connectionEnvNames = [
-  'POSTGRES_URL_NON_POOLING',
+  // The report API uses SUPABASE_URL_2/SUPABASE_SERVICE_ROLE_KEY_2. Keep the
+  // bootstrap on that same project first; otherwise CREATE TABLE can succeed
+  // in one Supabase project while the REST insert targets another project.
   'POSTGRES_URL_NON_POOLING_2',
-  'POSTGRES_URL_NON_POOLING_3',
-  'POSTGRES_URL',
   'POSTGRES_URL_2',
+  'POSTGRES_URL_NON_POOLING_3',
   'POSTGRES_URL_3',
+  'POSTGRES_URL_NON_POOLING',
+  'POSTGRES_URL',
 ] as const
 
 let bootstrapPromise: Promise<void> | undefined
