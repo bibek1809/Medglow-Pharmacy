@@ -1,5 +1,6 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { adToBs, parseReportDate } from '@/lib/nepali-date'
+import { ensureAdminReportsTable } from '@/lib/admin-reports-schema'
 
 const ADMIN_EMAIL = process.env.SUPABASE_ADMIN_EMAIL ?? 'pharmacymedglow@gmail.com'
 
@@ -27,6 +28,12 @@ function clean(body: Record<string, unknown>) {
 
 export async function GET() {
   if (!await requireAdmin()) return Response.json({ error: 'Admin access required' }, { status: 403 })
+  try {
+    await ensureAdminReportsTable()
+  } catch (error) {
+    console.error('[v0] Failed to bootstrap admin_reports for GET', error)
+    return Response.json({ error: 'Reports database is unavailable. Run the deployment migration or configure the database connection.' }, { status: 503 })
+  }
   const { data, error } = await createAdminClient().from('admin_reports').select('*').order('report_date', { ascending: false })
   if (error) return Response.json({ error: error.message }, { status: 500 })
   const reports = (data ?? []).map((report) => ({ ...report, bs_date: adToBs(report.report_date) }))
@@ -37,15 +44,25 @@ export async function POST(req: Request) {
   const user = await requireAdmin()
   if (!user) return Response.json({ error: 'Admin access required' }, { status: 403 })
   try {
+    await ensureAdminReportsTable()
     const values = clean(await req.json())
     const { data, error } = await createAdminClient().from('admin_reports').upsert({ ...values, created_by: user.id, updated_at: new Date().toISOString() }, { onConflict: 'report_date' }).select().single()
     if (error) return Response.json({ error: error.message }, { status: 500 })
     return Response.json({ report: data })
-  } catch (error) { return Response.json({ error: error instanceof Error ? error.message : 'Invalid report' }, { status: 400 }) }
+  } catch (error) {
+    console.error('[v0] Failed to bootstrap or save admin report', error)
+    return Response.json({ error: error instanceof Error && error.message.includes('Invalid ') ? error.message : 'Could not save report. The database may be unavailable.' }, { status: error instanceof Error && error.message.includes('Invalid ') ? 400 : 503 })
+  }
 }
 
 export async function DELETE(req: Request) {
   if (!await requireAdmin()) return Response.json({ error: 'Admin access required' }, { status: 403 })
+  try {
+    await ensureAdminReportsTable()
+  } catch (error) {
+    console.error('[v0] Failed to bootstrap admin_reports for DELETE', error)
+    return Response.json({ error: 'Reports database is unavailable. Run the deployment migration or configure the database connection.' }, { status: 503 })
+  }
   const { id } = await req.json().catch(() => ({}))
   if (typeof id !== 'string') return Response.json({ error: 'Report id is required' }, { status: 400 })
   const { error } = await createAdminClient().from('admin_reports').delete().eq('id', id)
