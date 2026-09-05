@@ -32,20 +32,57 @@ grant select, insert, update, delete on table public.admin_reports to authentica
 notify pgrst, 'reload schema';
 `
 
-let pool: Pool | undefined
+const connectionEnvNames = [
+  'POSTGRES_URL_NON_POOLING',
+  'POSTGRES_URL_NON_POOLING_2',
+  'POSTGRES_URL_NON_POOLING_3',
+  'POSTGRES_URL',
+  'POSTGRES_URL_2',
+  'POSTGRES_URL_3',
+] as const
+
 let bootstrapPromise: Promise<void> | undefined
 
-function getPool() {
-  if (pool) return pool
-  const connectionString = process.env.POSTGRES_URL_NON_POOLING_2 ?? process.env.POSTGRES_URL_2 ?? process.env.POSTGRES_URL_NON_POOLING ?? process.env.POSTGRES_URL
-  if (!connectionString) throw new Error('Report database connection is not configured')
-  pool = new Pool({ connectionString, max: 1, idleTimeoutMillis: 10_000, connectionTimeoutMillis: 5_000, ssl: { rejectUnauthorized: false } })
-  return pool
+function connectionStrings() {
+  return connectionEnvNames
+    .map((name) => process.env[name])
+    .filter((value): value is string => Boolean(value))
 }
 
+async function bootstrapWithAvailableConnection() {
+  const strings = connectionStrings()
+  if (strings.length === 0) throw new Error('Report database connection is not configured')
+
+  let lastError: unknown
+  for (const connectionString of strings) {
+    const candidate = new Pool({
+      connectionString,
+      max: 1,
+      idleTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 5_000,
+      ssl: { rejectUnauthorized: false },
+    })
+    try {
+      await candidate.query(createTableSql)
+      return
+    } catch (error) {
+      lastError = error
+    } finally {
+      await candidate.end().catch(() => undefined)
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error('Unable to initialize report database')
+}
+
+/**
+ * Runs immediately before report writes. It is intentionally idempotent and
+ * retries every injected Postgres connection so one stale project variable
+ * cannot prevent the Save daily summary action from initializing the schema.
+ */
 export function ensureAdminReportsTable() {
   if (!bootstrapPromise) {
-    bootstrapPromise = getPool().query(createTableSql).then(() => undefined).catch((error) => {
+    bootstrapPromise = bootstrapWithAvailableConnection().catch((error) => {
       bootstrapPromise = undefined
       throw error
     })
