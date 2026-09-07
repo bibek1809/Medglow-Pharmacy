@@ -1,2 +1,2 @@
-report_date,bs_date,total_sales,total_customers,offline_customers,offline_sales,tiktok_customers,tiktok_sales,instagram_customers,instagram_sales,whatsapp_customers,whatsapp_sales,expenses,notes
-2026-08-28,2083-05-12,0,0,0,0,0,0,0,0,0,0,0,Example row - replace values before upload
+Date,Total Sales,Total Customer,Offline Customer,Offline Sales,Online Customer Count,Online Sales,Total Tiktok Customer,Online Sales-Tiktok,Total Insta Customer,Online Sales-Insta,Total WA Customer,Online Sales -WA,Expenses,Online Percentage,Offline Percentage,Sales-Expenses
+2083-05-01,46745,39,30,35530,9,11215,0,0,3,4895,0,6320,0,23.99%,76.01%,46745

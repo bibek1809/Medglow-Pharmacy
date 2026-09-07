@@ -6,16 +6,27 @@ import { ensureAdminReportsTable } from '@/lib/admin-reports-schema'
 const ADMIN_EMAIL = process.env.SUPABASE_ADMIN_EMAIL ?? 'pharmacymedglow@gmail.com'
 const numericFields = {
   'Total Sales': 'total_sales',
+  'Total': 'total_sales',
   'Total Customer': 'total_customers',
+  'Customers (Total)': 'total_customers',
   'Offline Customer': 'offline_customers',
+  'Offline Customers': 'offline_customers',
   'Offline Sales': 'offline_sales',
+  Physical: 'offline_sales',
   'Total Tiktok Customer': 'tiktok_customers',
+  'Tiktok Count': 'tiktok_customers',
   'Online Sales-Tiktok': 'tiktok_sales',
+  Tiktok: 'tiktok_sales',
   'Total Insta Customer': 'instagram_customers',
+  'Insta Count': 'instagram_customers',
   'Online Sales-Insta': 'instagram_sales',
+  Insta: 'instagram_sales',
   'Total WA Customer': 'whatsapp_customers',
+  'WhatsApp Count': 'whatsapp_customers',
   'Online Sales -WA': 'whatsapp_sales',
+  WhatsApp: 'whatsapp_sales',
   'Expenses ': 'expenses',
+  Expenses: 'expenses',
 } as const
 
 async function requireAdmin() {
@@ -46,8 +57,9 @@ export async function POST(request: Request) {
   if (!user) return Response.json({ error: 'Admin access required' }, { status: 403 })
   const formData = await request.formData()
   const file = formData.get('file')
-  if (!(file instanceof File)) return Response.json({ error: 'Attach an .xlsx workbook' }, { status: 400 })
-  if (!file.name.toLowerCase().endsWith('.xlsx')) return Response.json({ error: 'Only .xlsx files are supported' }, { status: 400 })
+  if (!(file instanceof File)) return Response.json({ error: 'Attach an .xlsx or .csv report file' }, { status: 400 })
+  const fileName = file.name.toLowerCase()
+  if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.csv')) return Response.json({ error: 'Only .xlsx and .csv files are supported' }, { status: 400 })
 
   try {
     await ensureAdminReportsTable()
@@ -55,8 +67,11 @@ export async function POST(request: Request) {
     const sheet = workbook.Sheets[workbook.SheetNames[0]]
     const rows = utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: null })
     const reports = rows.map((row, index) => {
-      if (!row.Date && !row.date) return null
-      const report: Record<string, unknown> = { report_date: parseBsCell(row.Date ?? row.date), created_by: user.id, notes: `Imported from ${file.name}` }
+      const rawDate = row.Date ?? row.date ?? row['BS Date'] ?? row['Nepali Date']
+      if (!rawDate) return null
+      const dateText = String(rawDate).trim().toLowerCase()
+      if (dateText.includes('total') || dateText.includes('average')) return null
+      const report: Record<string, unknown> = { report_date: parseBsCell(rawDate), created_by: user.id, notes: `Imported from ${file.name}` }
       for (const [source, target] of Object.entries(numericFields)) report[target] = numberValue(row[source])
       if (report.total_customers === undefined) report.total_customers = numberValue(row['Customers (Total)'])
       return { ...report, row: index + 2 }
