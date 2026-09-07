@@ -25,6 +25,7 @@ create table if not exists public.admin_reports (
   total_sales numeric(12,2) not null default 0 check (total_sales >= 0),
   total_customers integer not null default 0 check (total_customers >= 0),
   offline_customers integer not null default 0 check (offline_customers >= 0),
+  online_customers integer not null default 0 check (online_customers >= 0),
   offline_sales numeric(12,2) not null default 0 check (offline_sales >= 0),
   tiktok_customers integer not null default 0 check (tiktok_customers >= 0),
   tiktok_sales numeric(12,2) not null default 0 check (tiktok_sales >= 0),
@@ -42,6 +43,8 @@ create table if not exists public.admin_reports (
   updated_at timestamptz not null default now(),
   notes text
 );
+alter table public.admin_reports add column if not exists online_customers integer not null default 0;
+alter table public.admin_reports drop constraint if exists admin_reports_created_by_fkey;
 create index if not exists admin_reports_report_date_idx on public.admin_reports(report_date desc);
 create index if not exists admin_reports_created_by_idx on public.admin_reports(created_by);
 alter table public.admin_reports enable row level security;

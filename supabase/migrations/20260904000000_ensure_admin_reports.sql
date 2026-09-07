@@ -4,6 +4,7 @@ create table if not exists public.admin_reports (
   total_sales numeric(12,2) not null default 0 check (total_sales >= 0),
   total_customers integer not null default 0 check (total_customers >= 0),
   offline_customers integer not null default 0 check (offline_customers >= 0),
+  online_customers integer not null default 0 check (online_customers >= 0),
   offline_sales numeric(12,2) not null default 0 check (offline_sales >= 0),
   tiktok_customers integer not null default 0 check (tiktok_customers >= 0),
   tiktok_sales numeric(12,2) not null default 0 check (tiktok_sales >= 0),
