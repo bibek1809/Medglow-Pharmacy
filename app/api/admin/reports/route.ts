@@ -12,7 +12,7 @@ async function requireAdmin() {
   return allowed ? user : null
 }
 
-const numericFields = ['total_sales','total_customers','offline_customers','offline_sales','tiktok_customers','tiktok_sales','instagram_customers','instagram_sales','whatsapp_customers','whatsapp_sales','expenses'] as const
+const numericFields = ['total_sales','total_customers','offline_customers','online_customers','offline_sales','tiktok_customers','tiktok_sales','instagram_customers','instagram_sales','whatsapp_customers','whatsapp_sales','expenses'] as const
 
 function clean(body: Record<string, unknown>) {
   const inputDate = typeof body.reportDate === 'string' ? body.reportDate : body.report_date
